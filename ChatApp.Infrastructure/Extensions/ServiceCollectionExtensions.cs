@@ -16,5 +16,11 @@ namespace ChatApp.Infrastructure.Extensions
 
             return services;
         }
+
+        public static IServiceCollection RegisterSignalR(this IServiceCollection services)
+        {
+            services.AddSignalR();
+            return services;
+        }
     }
 }

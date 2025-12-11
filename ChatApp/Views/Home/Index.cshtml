@@ -1,8 +1,37 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model 
+@{
+    ViewData["Title"] = "Chat Blog";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div>
+    <input type="text" id="messageInput" placeholder="Message..." />
+    <button onclick="sendMessage(event)">Send</button>
 </div>
+
+<ul id="messageBox">
+</ul>
+
+@section Scripts {
+    <!-- SignalR CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        sendMessage(e) {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/chat")
+                .build();
+
+            connection.on("ReceiveMessage", (user, message) => {
+                const li = document.createElement("li");
+                li.textContent = `${message}`;
+                document.getElementById("messageBox").appendChild(li);
+            });
+
+            async function sendMessage() {
+                const message = document.getElementById("messageInput").value;
+                await connection.invoke("SendMessage", user, message);
+            }
+
+            connection.start();
+        }
+    </script>
+}
