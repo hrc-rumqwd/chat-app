@@ -1,5 +1,6 @@
 ﻿using ChatApp.Infrastructure.Brokers;
 using ChatApp.Shared.Models.Commons;
+using ChatApp.Shared.Models.Messages.Dtos;
 
 namespace ChatApp.Application.Chat.Queries
 {
@@ -15,7 +16,7 @@ namespace ChatApp.Application.Chat.Queries
         }
     }
 
-    public class GetAllMessageQueryResult : PaginationResult<>
+    public class GetAllMessageQueryResult : PaginationResult<MessageDto>
     {
     }
 }

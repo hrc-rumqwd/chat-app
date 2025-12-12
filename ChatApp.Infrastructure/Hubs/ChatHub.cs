@@ -5,9 +5,9 @@ namespace ChatApp.Infrastructure.Hubs
 {
     public class ChatHub(IBroker broker) : Hub
     {
-        public async Task SendMessage(string userId, string message)
+        public async Task SendMessage(string message)
         {
-            await Clients.All.SendAsync("ReceivedMessage", userId, message);
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
     }
 }

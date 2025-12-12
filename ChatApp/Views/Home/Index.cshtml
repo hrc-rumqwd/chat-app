@@ -1,5 +1,4 @@
-﻿@model 
-@{
+﻿@{
     ViewData["Title"] = "Chat Blog";
 }
 
@@ -15,23 +14,21 @@
     <!-- SignalR CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        sendMessage(e) {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/hubs/chat")
-                .build();
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/chat")
+            .build();
 
-            connection.on("ReceiveMessage", (user, message) => {
-                const li = document.createElement("li");
-                li.textContent = `${message}`;
-                document.getElementById("messageBox").appendChild(li);
-            });
+        connection.on("ReceiveMessage", (message) => {
+            const li = document.createElement("li");
+            li.textContent = `${message}`;
+            document.getElementById("messageBox").appendChild(li);
+        });
 
-            async function sendMessage() {
-                const message = document.getElementById("messageInput").value;
-                await connection.invoke("SendMessage", user, message);
-            }
-
-            connection.start();
+        async function sendMessage(e) {
+            const message = document.getElementById("messageInput").value;
+            await connection.invoke("SendMessage", message);
         }
+
+        connection.start();
     </script>
 }
