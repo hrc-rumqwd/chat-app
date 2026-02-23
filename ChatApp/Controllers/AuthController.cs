@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.Authentication.Commands;
+using ChatApp.Infrastructure.Brokers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Web.Controllers
@@ -6,6 +7,13 @@ namespace ChatApp.Web.Controllers
     [Controller]
     public class AuthController : Controller
     {
+        private readonly IBroker _broker;
+
+        public AuthController(IBroker broker)
+        {
+            _broker = broker;
+        }
+
         [Route("/login")]
         public IActionResult Login(string returnUrl)
         {
@@ -13,9 +21,13 @@ namespace ChatApp.Web.Controllers
         }
 
         [HttpPost("/login")]
-        public IActionResult Login(LoginCommand command)
+        public async Task<IActionResult> Login(LoginCommand command)
         {
-            return Ok();
+            var loginResult = await _broker.CommandAsync(command);
+            
+            return loginResult.IsSucceeded
+            ? Ok()
+            : BadRequest();
         }
 
         [Route("/sign-up")]

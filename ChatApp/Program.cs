@@ -1,11 +1,24 @@
 using ChatApp.Infrastructure;
 using ChatApp.Application;
 using ChatApp.Infrastructure.Hubs;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.RegisterApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+#region Authorisation
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(cfg =>
+    {
+       cfg.LoginPath = "/Login";
+       cfg.ExpireTimeSpan = TimeSpan.FromHours(1);
+       cfg.SlidingExpiration = true; 
+    });
+#endregion
+
 // Add services to the container.
 builder.Services.AddControllersWithViews()
      .AddRazorRuntimeCompilation();
@@ -23,6 +36,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
