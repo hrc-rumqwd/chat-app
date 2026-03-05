@@ -1,4 +1,4 @@
-﻿using ChatApp.Infrastructure.Brokers;
+﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Shared.Models.Commons;
 using ChatApp.Shared.Models.Messages.Dtos;
 

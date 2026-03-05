@@ -3,95 +3,41 @@
     ViewData["Title"] = "Sign Up";
 }
 <form id="signUpForm">
-    @* <div class="text-center mb-3">
-        <p>Sign up with:</p>
-        <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-            <i class="fab fa-facebook-f"></i>
-        </button>
-
-        <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-            <i class="fab fa-google"></i>
-        </button>
-
-        <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-            <i class="fab fa-twitter"></i>
-        </button>
-
-        <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-            <i class="fab fa-github"></i>
-        </button>
+    <div id="CustomErrorContainer">
     </div>
 
-    <p class="text-center">or:</p> *@
-
-    <div data-mdb-input-init class="form-outline mb-4">
+    <div class="form-outline mb-4">
+        <label class="form-label" asp-for="FullName"></label>
         <input asp-for="FullName" class="form-control" />
-        <label class="form-label" asp-for="FullName">Full Name</label>
-        <span asp-valmsg-for="FullName"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
     </div>
 
-    <div data-mdb-input-init class="form-outline mb-4">
-        <input asp-for="Alias" class="form-control" />
-        <label class="form-label" asp-for="Alias">Alias</label>
-        <span data-valmsg-for="Alias"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
-    </div>
-
-    <div data-mdb-input-init class="form-outline mb-4">
+    <div class="form-outline mb-4">
+        <label class="form-label" asp-for="Dob"></label>
         <input asp-for="Dob" class="form-control" type="date" />
-        <label class="form-label" asp-for="Dob">Date Of Birth</label>
-        <span data-valmsg-for="Dob"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
+        <span asp-validation-for="Dob" class="text-danger"></span>
     </div>
 
-    <div data-mdb-input-init class="form-outline mb-4">
+    <div class="form-outline mb-4">
+        <label class="form-label" asp-for="UserName"></label>
         <input asp-for="UserName" class="form-control" />
-        <label class="form-label" asp-for="UserName">Username</label>
-        <span data-valmsg-for="UserName"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
+        <span asp-validation-for="Dob" class="text-danger"></span>
     </div>
 
-    <div data-mdb-input-init class="form-outline mb-4">
+    <div class="form-outline mb-4">
+        <label class="form-label" asp-for="Password"></label>
         <input asp-for="Password" class="form-control" type="password" />
-        <label class="form-label" asp-for="Password">Password</label>
-        <span data-valmsg-for="Password"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
+        <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
     <!-- Repeat Password input -->
-    <div data-mdb-input-init class="form-outline mb-4">
-        <input type="password" id="registerRepeatPassword" class="form-control" />
-        <label class="form-label" for="registerRepeatPassword">Repeat password</label>
-        <span data-valmsg-for="registerRepeatPassword"
-              data-valmsg-replace="true"
-              style="margin-left: 75px; color: red;" />
-    </div>
-
-    <!-- Checkbox -->
-    <div class="form-check d-flex justify-content-center mb-4">
-        <input class="form-check-input me-2" type="checkbox" value="" id="registerCheck" checked
-               aria-describedby="registerCheckHelpText" />
-        <label class="form-check-label" for="registerCheck">
-            I have read and agree to the terms
-        </label>
+    <div class="form-outline mb-4">
+        <label class="form-label" asp-for="RepeatPassword"></label>
+        <input asp-for="RepeatPassword" class="form-control" type="password" />
+        <span asp-validation-for="RepeatPassword" class="text-danger"></span>
     </div>
 
     <!-- Submit button -->
-    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-3" onclick="OnSubmitRegisterForm(event)">Sign in</button>
+    <button type="button" class="btn btn-primary btn-block mb-3" onclick="OnSubmitRegisterForm(event)">Sign in</button>
 </form>
-
-
-@section Scripts {
-    <script>
-        function OnSubmitRegisterForm(e) {
-            e.preventDefault();
-            const fullName = $("input#FullName");
-        }
-    </script>
-}
+<self-script></self-script>

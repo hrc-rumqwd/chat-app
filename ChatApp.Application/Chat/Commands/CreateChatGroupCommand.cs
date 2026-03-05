@@ -1,4 +1,4 @@
-﻿using ChatApp.Infrastructure.Brokers;
+﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Infrastructure.Persistence.Contexts;
 
 namespace ChatApp.Application.Chat.Commands

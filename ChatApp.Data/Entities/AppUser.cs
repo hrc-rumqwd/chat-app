@@ -6,6 +6,6 @@ namespace ChatApp.Data.Entities
     {
         public string FullName { get; set; }
         public DateTime Dob { get; set; }
-        public string Alias { get; set; }
+        public string? Alias { get; set; }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using MediatR;
-using System.Threading;
-
-namespace ChatApp.Infrastructure.Brokers
+namespace ChatApp.Application.Contracts.Brokers
 {
     public interface IBroker
     {

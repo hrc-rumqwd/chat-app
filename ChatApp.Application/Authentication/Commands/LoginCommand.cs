@@ -1,12 +1,17 @@
-﻿using ChatApp.Infrastructure.Brokers;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Shared.Models.Commons;
+using System.ComponentModel.DataAnnotations;
 
 namespace ChatApp.Application.Authentication.Commands
 {
     public class LoginCommand : ICommand<LoginCommandResult>
     {
+        [Display(Name = "User Name")]
+        public string UserName { get; set; }
+        [Display(Name = "Password")]
+        public string Password { get; set; }
+        [Display(Name = "Remeber Me")]
+        public bool? Remember { get; set; }
     }
 
     public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginCommandResult>
@@ -17,7 +22,7 @@ namespace ChatApp.Application.Authentication.Commands
         }
     }
 
-    public class LoginCommandResult
+    public class LoginCommandResult : ResultBase
     {
     }
 }

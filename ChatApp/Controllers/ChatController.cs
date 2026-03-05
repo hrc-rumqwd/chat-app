@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Chat.Commands;
-using ChatApp.Infrastructure.Brokers;
+using ChatApp.Application.Contracts.Brokers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Web.Controllers

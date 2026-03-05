@@ -1,5 +1,5 @@
 ﻿using MediatR;
-namespace ChatApp.Infrastructure.Brokers
+namespace ChatApp.Application.Contracts.Brokers
 {
     public interface IQuery<TQueryResult> : IRequest<TQueryResult>
     {

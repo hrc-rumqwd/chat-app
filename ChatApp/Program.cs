@@ -1,22 +1,28 @@
 using ChatApp.Infrastructure;
 using ChatApp.Application;
-using ChatApp.Infrastructure.Hubs;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.CodeAnalysis.FlowAnalysis;
+using ChatApp.Web.Extensions;
+using ChatApp.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.RegisterApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
+builder.Services.RegisterSignalR();
 
 #region Authorisation
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(cfg =>
     {
-       cfg.LoginPath = "/Login";
-       cfg.ExpireTimeSpan = TimeSpan.FromHours(1);
+       cfg.ExpireTimeSpan = TimeSpan.FromMinutes(15);
        cfg.SlidingExpiration = true; 
     });
+
+builder.Services.ConfigureApplicationCookie(cfg =>
+{
+    cfg.LoginPath = "/login";
+});
 #endregion
 
 // Add services to the container.

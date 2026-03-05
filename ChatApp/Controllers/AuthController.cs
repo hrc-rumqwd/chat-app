@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Authentication.Commands;
-using ChatApp.Infrastructure.Brokers;
+using ChatApp.Application.Contracts.Brokers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Web.Controllers
@@ -25,7 +25,7 @@ namespace ChatApp.Web.Controllers
         {
             var loginResult = await _broker.CommandAsync(command);
             
-            return loginResult.IsSucceeded
+            return loginResult.IsSucceed
             ? Ok()
             : BadRequest();
         }
@@ -39,7 +39,11 @@ namespace ChatApp.Web.Controllers
         [HttpPost("/sign-up")]
         public async Task<IActionResult> SignUp(SignUpCommand command)
         {
-            return Ok();
+            var result = await _broker.CommandAsync(command);
+            return result.IsSucceed
+                ? Ok()
+                : BadRequest();
         }
+
     }
 }

@@ -1,9 +1,11 @@
-﻿using ChatApp.Infrastructure.Brokers;
+﻿using ChatApp.Application.Contracts.Brokers;
 using Microsoft.AspNetCore.SignalR;
 
-namespace ChatApp.Infrastructure.Hubs
+namespace ChatApp.Web.Hubs
 {
-    public class ChatHub(IBroker broker) : Hub
+    public class ChatHub(
+        IBroker broker
+    ) : Hub
     {
         public async Task SendMessage(string message)
         {

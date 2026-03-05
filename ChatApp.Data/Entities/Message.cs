@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ChatApp.Shared.Models.Commons;
+using ChatApp.Shared.Models.Commons.Abstractions;
 
 namespace ChatApp.Data.Entities
 {
-    public class Message : BaseEn
+    public class Message : BaseEntity<long>, IAuditableEntity
     {
-        public  MyProperty { get; set; }
+        public string Content { get; set; }
+        public long UserId { get; set; }
     }
 }
