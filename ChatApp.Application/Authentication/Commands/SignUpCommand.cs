@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ChatApp.Application.Authentication.Commands
 {
-    public class SignUpCommand : ICommand<SignUpCommandResult>
+    public class SignUpCommand : ICommand<Result<SignUpCommandResult>>
     {
         [Required(ErrorMessage = "User Name must not be empty")]
         [Display(Name = "User Name")]
@@ -30,7 +30,7 @@ namespace ChatApp.Application.Authentication.Commands
         public DateTime Dob { get; set; }
     }
 
-    public class SignUpCommandHandler : ICommandHandler<SignUpCommand, SignUpCommandResult>
+    public class SignUpCommandHandler : ICommandHandler<SignUpCommand, Result<SignUpCommandResult>>
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
@@ -44,17 +44,13 @@ namespace ChatApp.Application.Authentication.Commands
             _userManager = userManager;
         }
 
-        public async Task<SignUpCommandResult> Handle(SignUpCommand request, CancellationToken cancellationToken)
+        public async Task<Result<SignUpCommandResult>> Handle(SignUpCommand request, CancellationToken cancellationToken)
         {
             AppUser? exist = await _userManager.FindByNameAsync(request.UserName);
 
             if (exist != null)
             {
-                return new SignUpCommandResult
-                {
-                    IsSucceed = false,
-                    Message = "User name already exists"
-                };
+                Result<SignUpCommandResult>.Failure("User name already exists");
             }
 
             AppUser user = new AppUser
@@ -68,27 +64,18 @@ namespace ChatApp.Application.Authentication.Commands
 
             if (!result.Succeeded)
             {
-                return ResultBase.Failed<SignUpCommandResult>(result.Errors?.FirstOrDefault()?.Description);
+                return Result<SignUpCommandResult>.Failure(result.Errors?.FirstOrDefault()?.Description);
             }
 
-            return new SignUpCommandResult
+            return Result<SignUpCommandResult>.Success(new SignUpCommandResult
             {
-                IsSucceed = true,
-                Message = "Sign up successfully",
-                Data = new SignUpCommandResultPayload
-                {
-                    UserId = user.Id,
-                    UserName = user.UserName
-                }
-            };
+                UserId = user.Id,
+                UserName = user.UserName
+            });
         }
     }
 
-    public class SignUpCommandResult : ResultBase<SignUpCommandResultPayload>
-    {
-    }
-
-    public class SignUpCommandResultPayload
+    public class SignUpCommandResult
     {
         public long UserId { get; set; }
         public string UserName { get; set; }

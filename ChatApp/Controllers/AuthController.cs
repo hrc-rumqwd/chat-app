@@ -25,9 +25,11 @@ namespace ChatApp.Web.Controllers
         {
             var loginResult = await _broker.CommandAsync(command);
             
-            return loginResult.IsSucceed
-            ? Ok()
-            : BadRequest();
+            return loginResult.IsSuccess
+            ? (string.IsNullOrEmpty(command.ReturnUrl)
+                ? Ok()
+                : Redirect(command.ReturnUrl))
+            : BadRequest(loginResult);
         }
 
         [Route("/sign-up")]
@@ -40,9 +42,9 @@ namespace ChatApp.Web.Controllers
         public async Task<IActionResult> SignUp(SignUpCommand command)
         {
             var result = await _broker.CommandAsync(command);
-            return result.IsSucceed
-                ? Ok()
-                : BadRequest();
+            return result.IsSuccess
+                ? RedirectToAction(nameof(Login), controllerName: nameof(AuthController))
+                : BadRequest(result);
         }
 
     }

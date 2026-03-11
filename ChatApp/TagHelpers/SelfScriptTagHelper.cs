@@ -19,7 +19,7 @@ namespace ChatApp.Web.TagHelpers
             output.Attributes.SetAttribute("type", "text/javascript");
 
             StringBuilder sb = new StringBuilder();
-            var filePath = ViewContext.ExecutingFilePath;
+            var filePath = ViewContext.View.Path;
             sb.Append(filePath);
             sb.Append(".js");
             output.Attributes.SetAttribute("src", sb.ToString());

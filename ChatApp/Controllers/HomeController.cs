@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ChatApp.Models;
+using ChatApp.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

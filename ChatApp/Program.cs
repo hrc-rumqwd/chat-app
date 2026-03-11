@@ -3,9 +3,11 @@ using ChatApp.Application;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ChatApp.Web.Extensions;
 using ChatApp.Web.Hubs;
+using ChatApp.Web.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
@@ -15,8 +17,8 @@ builder.Services.RegisterSignalR();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(cfg =>
     {
-       cfg.ExpireTimeSpan = TimeSpan.FromMinutes(15);
-       cfg.SlidingExpiration = true; 
+        cfg.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+        cfg.SlidingExpiration = true;
     });
 
 builder.Services.ConfigureApplicationCookie(cfg =>
@@ -25,9 +27,10 @@ builder.Services.ConfigureApplicationCookie(cfg =>
 });
 #endregion
 
-// Add services to the container.
 builder.Services.AddControllersWithViews()
      .AddRazorRuntimeCompilation();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 

@@ -1,6 +1,9 @@
 ﻿@model ChatApp.Application.Authentication.Commands.LoginCommand
+@{
+    ViewData["Title"] = "Login"; 
+}
 
-<form>
+<form id="loginForm">
     <!-- UserName input -->
     <div data-mdb-input-init class="form-outline mb-4">
         <label asp-for="UserName" class="form-label"></label>
@@ -11,7 +14,7 @@
     <!-- Password input -->
     <div data-mdb-input-init class="form-outline mb-4">
         <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" />
+        <input asp-for="Password" type="password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
@@ -22,7 +25,7 @@
     </div>
 
     <!-- Submit button -->
-    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">Sign in</button>
+    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4" onclick="onSubmitRegisterForm(event)">Sign in</button>
 
     <div class="row">
         <span>
@@ -31,3 +34,8 @@
         </span>
     </div>
 </form>
+
+@section Scripts {
+    <partial name="_NotificationModal"/>
+    <self-script></self-script>
+}
