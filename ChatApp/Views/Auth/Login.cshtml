@@ -20,12 +20,12 @@
 
     <!-- Checkbox -->
     <div class="form-check">
-        <input class="form-check-input" asp-for="Remember" checked />
+        <input type="checkbox" class="form-check-input" asp-for="Remember" checked />
         <label class="form-check-label" asp-for="Remember"></label>
     </div>
 
     <!-- Submit button -->
-    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4" onclick="onSubmitRegisterForm(event)">Sign in</button>
+    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4" onclick="onSubmitLoginForm(event)">Sign in</button>
 
     <div class="row">
         <span>
@@ -36,6 +36,6 @@
 </form>
 
 @section Scripts {
-    <partial name="_NotificationModal"/>
     <self-script></self-script>
+    <partial name="Components/_NotificationModal.cshtml" />
 }

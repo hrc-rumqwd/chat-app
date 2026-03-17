@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Contracts.Brokers;
+﻿using ChatApp.Application.Chat.Commands;
+using ChatApp.Application.Contracts.Brokers;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.Web.Hubs
@@ -7,9 +8,17 @@ namespace ChatApp.Web.Hubs
         IBroker broker
     ) : Hub
     {
-        public async Task SendMessage(string message)
+        public async Task SendMessage(string message, long userId)
         {
-            await Clients.All.SendAsync("ReceiveMessage", message);
+            var sendMessageResult = await broker.CommandAsync(new SendMessageCommand(userId, message));
+            
+            if(sendMessageResult.IsSuccess != true)
+            {
+                await Clients.Caller.SendAsync("OnSendMessageError", sendMessageResult);
+                return;
+            }
+
+            await Clients.All.SendAsync("ReceiveMessage", sendMessageResult);
         }
     }
 }

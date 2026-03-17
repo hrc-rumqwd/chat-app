@@ -19,6 +19,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         cfg.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         cfg.SlidingExpiration = true;
+        cfg.Cookie.HttpOnly = true;
+        cfg.Cookie.SameSite = SameSiteMode.Strict;
     });
 
 builder.Services.ConfigureApplicationCookie(cfg =>
@@ -27,10 +29,14 @@ builder.Services.ConfigureApplicationCookie(cfg =>
 });
 #endregion
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddControllersWithViews()
      .AddRazorRuntimeCompilation();
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 
 var app = builder.Build();
 
@@ -43,6 +49,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+//app.UseCookiePolicy(new CookiePolicyOptions
+//{
+//    MinimumSameSitePolicy = SameSiteMode.Strict
+//});
+
 app.UseRouting();
 
 app.UseAuthentication();

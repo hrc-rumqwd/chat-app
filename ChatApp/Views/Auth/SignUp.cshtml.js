@@ -1,6 +1,4 @@
 ﻿function OnSubmitRegisterForm(e) {
-    debugger;
-
     e.preventDefault();
     const fullName = $("input#FullName").val();
     const email = $("input#Email").val();
@@ -32,7 +30,13 @@
             dob
         },
         success: function (data) {
-            console.log(data);
+            if (data.isSuccess) {
+                window.location.href = '/login';
+            }
+            else {
+                // Show error message
+                console.error(data.error);
+            }
         }
     })
 }

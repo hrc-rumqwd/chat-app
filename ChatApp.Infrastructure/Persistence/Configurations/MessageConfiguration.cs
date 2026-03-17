@@ -1,8 +1,9 @@
 ﻿using ChatApp.Data.Entities;
+using ChatApp.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ChatApp.Infrastructure.Extensions
+namespace ChatApp.Infrastructure.Persistence.Configurations
 {
     internal class MessageConfiguration : IEntityTypeConfiguration<Message>
     {

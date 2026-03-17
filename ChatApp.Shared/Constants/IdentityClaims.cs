@@ -4,9 +4,9 @@ namespace ChatApp.Shared.Constants
 {
     public static class IdentityClaims
     {
-        public static string UserId = "Uid";
-        public static string UserName = ClaimTypes.Name;
-        public static string Dob = "Dob";
-        public static string FullName = "FullName";
+        public const string UserId = "Uid";
+        public const string UserName = ClaimTypes.Name;
+        public const string Dob = "Dob";
+        public const string FullName = "FullName";
     }
 }

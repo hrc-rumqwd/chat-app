@@ -18,7 +18,7 @@ namespace ChatApp.Application.Authentication.Commands
         [Display(Name = "Password")]
         public string Password { get; set; }
         [Display(Name = "Remeber Me")]
-        public bool? Remember { get; set; }
+        public bool Remember { get; set; } = false;
         public string? ReturnUrl { get; set; }
     }
 
@@ -39,7 +39,7 @@ namespace ChatApp.Application.Authentication.Commands
             }
 
             SignInResult signInResult = await signInManager.PasswordSignInAsync(
-                user, request.Password, request.Remember ?? false, false);
+                user, request.Password, request.Remember, false);
 
             if(signInResult.IsLockedOut)
                 Result<LoginCommandResult>.Failure(nameof(signInResult.IsLockedOut));
@@ -52,9 +52,16 @@ namespace ChatApp.Application.Authentication.Commands
 
             // If bypass all above conditions, then login
             await httpContextAccessor.HttpContext.SignInAsync(
-                GetUserClaims(user));
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                GetUserClaims(user),
+                new AuthenticationProperties
+                {
+                    IsPersistent = request.Remember,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1),
+                    AllowRefresh = true
+                });
 
-            return Result<LoginCommandResult>.Success(new LoginCommandResult());
+            return Result<LoginCommandResult>.Success(new LoginCommandResult(request.ReturnUrl));
         }
 
         protected ClaimsPrincipal GetUserClaims(AppUser user)
@@ -67,13 +74,14 @@ namespace ChatApp.Application.Authentication.Commands
                 new Claim(IdentityClaims.Dob, user.Dob.ToUniversalTime().ToString()),
             };
             
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
             return claimsPrincipal;
         }
     }
 
-    public class LoginCommandResult
-    {
-    }
+    public record LoginCommandResult(
+        string? ReturnUrl
+    );
 }

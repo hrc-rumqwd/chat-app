@@ -2,35 +2,36 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-Object.prototype.serializeObjects = function () {
-    const formData = $(this).serializeArray();
+(function ($) {
+    $.fn.serializeObjects = function () {
+        const formData = this.serializeArray();
+        const formObject = {};
 
-    const formObject = {};
-    formData.forEach(item => {
-        formObject[item.name] = item.value
-    });
+        $.each(formData, function () {
+            formObject[this.name] = this.value;
+        });
 
-    return formObject;
-}
-
-
-const api = {
-    post = function (url, payload, success, error) {
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: data,
-            success: success,
-            error: error
-        })
-    },
-
-    get = function (url, success, error) {
-        $.ajax({
-            type: "GET",
-            url: url,
-            success: success,
-            error
-        })
+        return formObject;
     }
-}
+})(jQuery)
+
+//const api = {
+//    post = function (url, payload, success, error) {
+//        $.ajax({
+//            type: "POST",
+//            url: url,
+//            data: data,
+//            success: success,
+//            error: error
+//        })
+//    },
+
+//    get = function (url, success, error) {
+//        $.ajax({
+//            type: "GET",
+//            url: url,
+//            success: success,
+//            error
+//        })
+//    }
+//}
