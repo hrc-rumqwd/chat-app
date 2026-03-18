@@ -15,12 +15,6 @@
     })
 }
 
-function setMessageToBoard(senderName, content) {
-    const li = document.createElement("li");
-    li.textContent = `${senderName}: ${content}`;
-    document.getElementById("messageBox").appendChild(li);
-}
-
 function getChatHistory() {
     $.ajax({
         url: '/api/chat?pageIndex=1&pageSize=10',
@@ -30,7 +24,7 @@ function getChatHistory() {
         },
         success: function (data) {
             data.data.forEach(message =>
-                setMessageToBoard(message.senderName, message.content)
+                addMessageToBoard(message.senderName, message.content, message.sentAt)
             );
         },
         error: function (data) {
@@ -38,6 +32,53 @@ function getChatHistory() {
                 console.log(data);
         }
     })
+}
+
+function createChatItem(thumbnail, senderName, content, sentAt) {
+    const li = $('<li>').addClass('d-flex justify-content-between mb-4');
+    let sentAtTitle = "ago";
+
+    // Calculate sent at time with current time
+    const current = new Date();
+    const sentAtDate = new Date(Date.parse(sentAt));
+
+    // this calculate the time difference in miliseconds
+    const duration = current - sentAtDate;
+    const timeDifferenceMins = Math.floor(duration / 60000);
+    const timeDifferenceHours = Math.floor(duration / 3600000);
+    const timeDifferenceDays = Math.floor(duration / 86400000);
+
+    if (timeDifferenceMins < 60) {
+        sentAtTitle = `${timeDifferenceMins < 60000 ? "1 minute" : `${timeDifferenceMins} minutes`} ${sentAtTitle}`;
+    }
+    else if (timeDifferenceHours < 24) {
+        sentAtTitle = `${timeDifferenceHours <= 1 ? "1 hour" : `${timeDifferenceHours} hours`} ${sentAtTitle}`;
+    }
+    else if (timeDifferenceDays < 30) {
+        sentAtTitle = `${timeDifferenceHours <= 1 ? "1 day" : `${timeDifferenceHours} days`} ${sentAtTitle}`;
+    }
+
+    li.html(`
+        <img src="${thumbnail}" alt="avatar"
+            class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between p-3">
+                    <p class="fw-bold mb-0">${senderName}</p>
+                    <p class="text-muted small mb-0"><i class="far fa-clock"></i> ${sentAtTitle}</p>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">${content}</p>
+                </div>
+            </div>
+    `);
+
+    return li;
+}
+
+
+function addMessageToBoard(senderName, content, sentAt) {
+    const item = createChatItem("/images/avatar.png", senderName, content, sentAt);
+    $("#messageBoard").append(item);
 }
 
 getCurrentUserInfo();
@@ -48,7 +89,7 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 
 connection.on("ReceiveMessage", (result) => {
-    setMessageToBoard(result.data.senderName, result.data.content);
+    addMessageToBoard(result.data.senderName, result.data.content, result.data.sentAt);
 });
 
 connection.on("OnSendMessageError", (data) => {
@@ -57,13 +98,16 @@ connection.on("OnSendMessageError", (data) => {
 });
 
 async function sendMessage(e) {
-    debugger;
     const userInfo = JSON.parse(localStorage.getItem('currentUser'));
     const message = document.getElementById("messageInput").value;
 
     await connection.invoke("SendMessage", message, userInfo.id);
+
+    // Clear the input field after sending the message
+    document.getElementById("messageInput").value = "";
 }
 
 connection.start();
+
 
 

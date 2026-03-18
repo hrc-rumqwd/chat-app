@@ -32,6 +32,7 @@ namespace ChatApp.Application.Chat.Queries
                     // Map properties from Message to GetMessagesQueryResult
                     Content = x.Content,
                     SenderId = x.UserId,
+                    SentAt = x.CreatedAt
                 })
                 .ToListAsync();
 
@@ -44,6 +45,7 @@ namespace ChatApp.Application.Chat.Queries
             {
                 var sender = senders.FirstOrDefault(s => s.Id == m.SenderId);
                 m.SenderName = sender != null ? sender.FullName : "Unknown";
+                m.SentAt = m.SentAt.ToUniversalTime();
             });
 
             return Result<ICollection<GetMessagesQueryResult>>.Success(messages);
@@ -55,5 +57,6 @@ namespace ChatApp.Application.Chat.Queries
         public string Content { get; set; }
         public string SenderName { get; set; }
         public long SenderId { get; set; }
+        public DateTime SentAt { get; set; }
     }
 }

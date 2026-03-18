@@ -36,11 +36,13 @@ namespace ChatApp.Application.Chat.Commands
                 return Result<SendMessageCommandResult>.Failure("User not found");
             }
 
-            dbContext.Messages.Add(new Message()
+            Message m = new Message()
             {
                 Content = request.Content,
                 UserId = request.SenderId,
-            });
+            };
+
+            dbContext.Messages.Add(m);
 
             await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -49,6 +51,7 @@ namespace ChatApp.Application.Chat.Commands
                 UserId = request.SenderId,
                 Content = request.Content,
                 SenderName = user.FullName,
+                SentAt = m.CreatedAt
             });
         }
     }
@@ -58,5 +61,6 @@ namespace ChatApp.Application.Chat.Commands
         public long UserId { get; set; }
         public string SenderName { get; set; }
         public string Content { get; set; }
+        public DateTime SentAt { get; set; }
     }
 }
