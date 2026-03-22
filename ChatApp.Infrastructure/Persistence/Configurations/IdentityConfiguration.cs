@@ -1,4 +1,5 @@
 ﻿using ChatApp.Data.Entities;
+using ChatApp.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,9 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
                 cfg.HasKey(k => k.Id);
                 cfg.Property(p => p.FullName).IsRequired();
                 cfg.Property(p => p.Dob).IsRequired();
+
+                cfg.ApplyAuditableEntityConfiguration();
+                cfg.ApplyRemovableEntityConfiguration();
             });
 
             builder.Entity<AppRole>(cfg =>

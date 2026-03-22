@@ -16,7 +16,7 @@ namespace ChatApp.Infrastructure.Persistence.Contexts
         }
 
         public DbSet<Message> Messages { get ; set ; }
-        public DbSet<ChatGroup> ChatGroups { get ; set ; }
+        public DbSet<Group> ChatGroups { get ; set ; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

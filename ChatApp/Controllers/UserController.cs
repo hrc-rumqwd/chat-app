@@ -39,5 +39,16 @@ namespace ChatApp.Web.Controllers
                 ? Ok(result)
                 : BadRequest(result);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserList(int pageIndex, int pageSize)
+        {
+            var result = await _broker.QueryAsync(new GetUserListQuery
+            {
+                PageIndex = pageIndex, 
+                PageSize = pageSize
+            });
+            return Ok(result);
+        }
     }
 }

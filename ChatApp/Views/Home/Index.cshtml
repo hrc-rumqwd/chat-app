@@ -1,20 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Chat Blog";
 }
-<section>
-    <div class="container py-5">
+<section class="h-100">
+    <div class="container-fluid p-3 h-100">
 
-        <div class="row">
+        <div class="row h-100 g-3">
 
-            <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
+            <div class="col-md-4 col-lg-4 h-100 d-flex flex-column">
 
-                <h5 class="font-weight-bold mb-3 text-center text-lg-start">Member</h5>
+                <h5 class="font-weight-bold mb-3">Member</h5>
 
-                <div class="card">
-                    <div class="card-body">
-
-                        <ul class="list-unstyled mb-0">
-                            <li class="p-2 border-bottom bg-body-tertiary">
+                <div class="card flex-grow-1 overflow-hidden">
+                    <div class="card-body overflow-y-auto">
+                        <ul id="userList" class="list-unstyled mb-0">
+                            @* <li class="p-2 border-bottom bg-body-tertiary">
                                 <a href="#!" class="d-flex justify-content-between">
                                     <div class="d-flex flex-row">
                                         <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-8.webp" alt="avatar"
@@ -120,25 +119,38 @@
                                         <span class="text-muted float-end"><i class="fas fa-check" aria-hidden="true"></i></span>
                                     </div>
                                 </a>
-                            </li>
+                            </li> *@
                         </ul>
-
+                        <div id="loadingTrigger" style="height: 20px;">
+                            <div class="skeleton-container" id="skeleton-loader" style="display: none;">
+                                <div class="skeleton-item">
+                                    <div class="skeleton-avatar"></div>
+                                    <div class="skeleton-text"></div>
+                                </div>
+                                <div class="skeleton-item">
+                                    <div class="skeleton-avatar"></div>
+                                    <div class="skeleton-text"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="col-md-6 col-lg-7 col-xl-8">
+            <div class="col-md-8 col-lg-8 h-100 d-flex flex-column">
 
-                <ul id="messageBoard" class="list-unstyled">
+                <ul id="messageBoard" class="list-unstyled overflow-y-auto flex-grow-1 px-3 border rounded bg-light mb-3">
+                    <div id="topSentinel" style="height: 2px;"></div>
+                    <div id="topSkeleton" style="display: none;"></div>
+
                 </ul>
-                <div class="bg-white mb-3">
-                    <div data-mdb-input-init class="form-outline">
+                <div class="bg-white p-2 border-top">
+                    <div data-mdb-input-init class="form-outline mb-2">
                         <textarea class="form-control bg-body-tertiary" id="messageInput" rows="4" placeholder="Message..."></textarea>
                     </div> 
+                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end" onclick="sendMessage(event)">Send</button>
                 </div>
-                <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end" onclick="sendMessage(event)">Send</button>
-
             </div>
 
         </div>

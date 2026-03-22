@@ -18,7 +18,9 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -36,4 +38,44 @@ body {
 
 .is-show {
     display: block;
+}
+
+/* The base block */
+.skeleton-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    gap: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    background: #e0e0e0;
+    border-radius: 50%;
+}
+
+.skeleton-text {
+    height: 15px;
+    width: 150px;
+    background: #e0e0e0;
+    border-radius: 4px;
+}
+
+/* The Shimmer Animation */
+.skeleton-avatar, .skeleton-text {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }

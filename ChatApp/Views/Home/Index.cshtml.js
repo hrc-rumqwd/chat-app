@@ -1,4 +1,29 @@
-﻿function getCurrentUserInfo() {
+﻿let isLoading = false;
+let currentUserPage = 1;
+let currentMessagePage = 1;
+let isFetchingOlderMessages = false;
+
+const userList = $("ul#userList");
+const trigger = $("div#loadingTrigger");
+const messageBoard = $("ul#messageBoard");
+const topSentiel = $("div#topSentinel");
+
+const observer = new IntersectionObserver((entries) => {
+    // If the sentinel is visible, load more!
+    if (entries[0].isIntersecting) {
+        LoadUsers();
+    }
+}, { threshold: 1.0 });
+observer.observe(trigger[0]);
+
+const topObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !isFetchingOlderMessages) {
+        getChatHistory();
+    }
+}, { threshold: 1.0 });
+topObserver.observe(topSentiel[0]);
+
+function getCurrentUserInfo() {
     $.ajax({
         url: '/api/users/current',
         type: 'GET',
@@ -16,16 +41,38 @@
 }
 
 function getChatHistory() {
+    isFetchingOlderMessages = true;
+
+    // Capture the height before adding new messages
+    const previousHeight = messageBoard.prop("scrollHeight");
+
+    // Fetching older messages
     $.ajax({
-        url: '/api/chat?pageIndex=1&pageSize=10',
+        url: `/api/chat?pageIndex=${currentMessagePage}&pageSize=10`,
         type: 'GET',
         xhrFields: {
             withCredentials: true
         },
         success: function (data) {
-            data.data.forEach(message =>
-                addMessageToBoard(message.senderName, message.content, message.sentAt)
-            );
+            if (data.data.length > 0) {
+                data.data
+                    .forEach(message => {
+                        // Prepend messages (add them AFTER the sentinel but BEFORE existing messages)
+                        const item = createChatItem("/images/avatar.png", message.senderName, message.content, message.sentAt);
+                        // Insert after the sentinel
+                        topSentiel.after(item);
+                    });
+
+                // Adjust scroll position so the user doesn't lose their place
+                // New Height - Old Height = The exact distance to maintain the view
+                messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight") - previousHeight);
+                currentMessagePage += 1;
+            }
+            else {
+                topObserver.unobserve(topSentiel[0]);
+            }
+
+            isFetchingOlderMessages = false;
         },
         error: function (data) {
             if (data.status == 400)
@@ -75,21 +122,82 @@ function createChatItem(thumbnail, senderName, content, sentAt) {
     return li;
 }
 
+function createUserItem(thumbnail, name, lastMessage, lastActive) {
+    const li = $("<li>").addClass("p-2 border-bottom");
+    const directChat = $("<a>").addClass("d-flex justify-content-between");
+    li.append(directChat);
 
-function addMessageToBoard(senderName, content, sentAt) {
-    const item = createChatItem("/images/avatar.png", senderName, content, sentAt);
-    $("#messageBoard").append(item);
+    directChat.html(`
+        <div class="d-flex flex-row">
+            <img src="${thumbnail}" alt="avatar"
+                    class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+            <div class="pt-1">
+                <p class="fw-bold mb-0">${name}</p>
+                <p class="small text-muted">${lastMessage}</p>
+            </div>
+        </div>
+        <div class="pt-1">
+            <p class="small text-muted mb-1">${lastActive}</p>
+        </div>
+    `);
+
+    return li;
+}
+
+function fetchUsers(pageIndex, pageSize, onSuccess) {
+    $.ajax({
+        url: `/api/users?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+        type: 'GET',
+        xhrFields: {
+            withCredentials: true
+        },
+        success: onSuccess
+    });
+}
+
+function LoadUsers() {
+    if (isLoading) return;  // Prevent double-triggering
+    isLoading = true;
+
+    const skeleton = $("#skeleton-loader");
+    skeleton.css("display", "block");
+
+    try {
+        fetchUsers(currentUserPage, 10, function (data) {
+            const users = data.data.users;
+            if (users.length > 0) {
+                users.forEach(user => {
+                    const item = createUserItem("", user.fullName, "", new Date());
+                    userList.append(item);
+                });
+                currentUserPage++; // Prepare for next batch
+            }
+            else {
+                observer.unobserve(trigger[0]);
+            }
+        });
+    }
+    catch (error) {
+        console.error("Failed to fetch users", error);
+    }
+    finally {
+        isLoading = false; // Reset loading state
+        skeleton.css("display", "none");
+    }
 }
 
 getCurrentUserInfo();
-getChatHistory();
 
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/hubs/chat")
     .build();
 
 connection.on("ReceiveMessage", (result) => {
-    addMessageToBoard(result.data.senderName, result.data.content, result.data.sentAt);
+    debugger;
+    const li = createChatItem("", result.data.senderName, result.data.content, result.data.sentAt);
+    messageBoard.append(li);
+
+    messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight"));
 });
 
 connection.on("OnSendMessageError", (data) => {

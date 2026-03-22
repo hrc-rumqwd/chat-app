@@ -1,4 +1,5 @@
 ﻿using ChatApp.Data.Entities;
+using ChatApp.Infrastructure.Caching;
 using ChatApp.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,12 @@ namespace ChatApp.Infrastructure
             })
                 .AddEntityFrameworkStores<Persistence.Contexts.ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+
+            // Caching setup
+            services.AddMemoryCache();
+            services.AddSingleton<ICacheService, MemoryCacheService>();
+
         }
     }
 }

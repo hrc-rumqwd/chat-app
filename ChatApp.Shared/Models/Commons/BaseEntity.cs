@@ -1,4 +1,5 @@
 ﻿using ChatApp.Shared.Models.Commons.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Shared.Models.Commons
 {

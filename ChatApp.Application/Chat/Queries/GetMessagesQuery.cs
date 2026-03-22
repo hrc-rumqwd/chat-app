@@ -26,6 +26,7 @@ namespace ChatApp.Application.Chat.Queries
             //}
 
             var messages = await context.Messages
+                .OrderByDescending(x => x.CreatedAt)
                 .PaginatedQuery(request.PageIndex, request.PageSize)
                 .Select(x => new GetMessagesQueryResult
                 {

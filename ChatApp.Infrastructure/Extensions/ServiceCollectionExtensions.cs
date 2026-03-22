@@ -16,8 +16,12 @@ namespace ChatApp.Infrastructure.Extensions
             services.AddScoped<UpdateAuditableInterceptor>();
 
             services.AddDbContext<ApplicationDbContext>((sp, cfg) =>
+            {
                 cfg.UseNpgsql(connectionString)
-                    .AddInterceptors(sp.GetRequiredService<UpdateAuditableInterceptor>()));
+                    .AddInterceptors(sp.GetRequiredService<UpdateAuditableInterceptor>());
+                cfg.EnableSensitiveDataLogging();
+                cfg.EnableDetailedErrors();
+            });
 
             return services;
         }

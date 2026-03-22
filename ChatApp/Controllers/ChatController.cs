@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.Chat.Commands;
 using ChatApp.Application.Chat.Queries;
 using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Groups.Commands;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ namespace ChatApp.Web.Controllers
     [Controller]
     public class ChatController(IBroker broker) : ControllerBase
     {
-        public async Task<IActionResult> CreateGroup(CreateChatGroupCommand command)
+        public async Task<IActionResult> CreateGroup(CreateGroupCommand command)
         {
             var result = await broker.CommandAsync(command);
             return Ok(result);

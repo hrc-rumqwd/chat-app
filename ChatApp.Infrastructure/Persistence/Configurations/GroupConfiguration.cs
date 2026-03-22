@@ -5,16 +5,20 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ChatApp.Infrastructure.Persistence.Configurations
 {
-    public class ChatGroupConfiguration : IEntityTypeConfiguration<ChatGroup>
+    public class GroupConfiguration : IEntityTypeConfiguration<Group>
     {
-        public void Configure(EntityTypeBuilder<ChatGroup> builder)
+        public void Configure(EntityTypeBuilder<Group> builder)
         {
             builder.ToTable("Groups");
-            
-            builder.Property(e => e.GroupName)
-                .HasColumnName("Name")
+            builder.HasKey(g => g.Id);
+
+            builder.Property(g => g.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.HasMany(g => g.Messages)
+                .WithOne(m => m.Group)
+                .HasForeignKey(m => m.GroupId);
 
             builder.ApplyAuditableEntityConfiguration();
             builder.ApplyRemovableEntityConfiguration();

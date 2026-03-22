@@ -16,6 +16,10 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
 
             builder.ApplyAuditableEntityConfiguration();
             builder.ApplyRemovableEntityConfiguration();
+
+            builder.HasOne(e => e.Group)
+                .WithMany(d => d.Messages)
+                .HasForeignKey(e => e.GroupId);
         }
     }
 }

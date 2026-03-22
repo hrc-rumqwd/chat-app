@@ -11,12 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+
 builder.Services.RegisterSignalR();
 
 #region Authorisation
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(cfg =>
     {
+        cfg.LoginPath = "/login";
         cfg.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         cfg.SlidingExpiration = true;
         cfg.Cookie.HttpOnly = true;
@@ -36,7 +38,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews()
      .AddRazorRuntimeCompilation();
 
-
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -46,14 +48,14 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    });
 }
 
 app.UseHttpsRedirection();
-
-//app.UseCookiePolicy(new CookiePolicyOptions
-//{
-//    MinimumSameSitePolicy = SameSiteMode.Strict
-//});
 
 app.UseRouting();
 
