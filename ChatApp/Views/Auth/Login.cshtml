@@ -3,37 +3,40 @@
     ViewData["Title"] = "Login"; 
 }
 
-<form id="loginForm">
-    <!-- UserName input -->
-    <div data-mdb-input-init class="form-outline mb-4">
-        <label asp-for="UserName" class="form-label"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
-    </div>
+<div class="container">
+    
+    <form id="loginForm">
+        <!-- UserName input -->
+        <div data-mdb-input-init class="form-outline mb-4">
+            <label asp-for="UserName" class="form-label"></label>
+            <input asp-for="UserName" class="form-control" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
 
-    <!-- Password input -->
-    <div data-mdb-input-init class="form-outline mb-4">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+        <!-- Password input -->
+        <div data-mdb-input-init class="form-outline mb-4">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
 
-    <!-- Checkbox -->
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" asp-for="Remember" checked />
-        <label class="form-check-label" asp-for="Remember"></label>
-    </div>
+        <!-- Checkbox -->
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" asp-for="Remember" checked />
+            <label class="form-check-label" asp-for="Remember"></label>
+        </div>
 
-    <!-- Submit button -->
-    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4" onclick="onSubmitLoginForm(event)">Sign in</button>
+        <!-- Submit button -->
+        <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4" onclick="onSubmitLoginForm(event)">Sign in</button>
 
-    <div class="row">
-        <span>
-            Not have account?
-            <a href="/sign-up">Register</a>
-        </span>
-    </div>
-</form>
+        <div class="row">
+            <span>
+                Not have account?
+                <a href="/sign-up">Register</a>
+            </span>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <self-script></self-script>

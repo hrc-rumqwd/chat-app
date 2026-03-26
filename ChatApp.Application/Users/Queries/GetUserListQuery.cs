@@ -1,73 +1,63 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Caching;
+using ChatApp.Application.Users.Shared.Dtos;
 using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Infrastructure.Presence;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.ObjectModel;
 
 namespace ChatApp.Application.Users.Queries
 {
     public class GetUserListQuery : PaginationBase, IQuery<Result<GetUserListQueryResult>>
     {
+        public long? CurrentUserId { get; set; }
     }
 
     public class GetUserListQueryHandler : IQueryHandler<GetUserListQuery, Result<GetUserListQueryResult>>
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly ICacheService _cache;
+        private readonly IPresenceTracker _tracker;
 
-        public GetUserListQueryHandler(ApplicationDbContext dbContext,
-            ICacheService cache)
+        public GetUserListQueryHandler(
+            ApplicationDbContext dbContext,
+            IPresenceTracker tracker)
         {
             _dbContext = dbContext;
-            _cache = cache;
+            _tracker = tracker;
         }
 
         public async Task<Result<GetUserListQueryResult>> Handle(GetUserListQuery request, CancellationToken cancellationToken)
         {
-            var users = _cache.Get<List<AppUser>>(CacheKeys.UserList);
 
-            // Calculate max size of current cache based on page size and index
-            int skipRowIndex = (request.PageIndex - 1) * request.PageSize;
-            if (users is not null
-                && (users.Count - skipRowIndex) > 0)
-            {
-                users = users.ToPaginatedList(request.PageIndex, request.PageSize);
-                return Result<GetUserListQueryResult>.Success(new GetUserListQueryResult(users));
-            }
-
-            List<AppUser> pagedUsers = await _dbContext.Users
-                .PaginatedQuery(request.PageIndex, request.PageSize)
+            List<UserListItemDto> pagedUsers = await _dbContext.Users
+                .AsNoTracking()
+                .Where(x => x.Id != request.CurrentUserId)
                 .OrderByDescending(e => e.CreatedAt)
+                .PaginatedQuery(request.PageIndex, request.PageSize)
+                .Select(x => new UserListItemDto
+                {
+                    Id = x.Id,
+                    Alias = x.Alias,
+                    Dob = x.Dob,
+                    FullName = x.FullName,
+                })
                 .ToListAsync(cancellationToken);
 
             if(pagedUsers.Count == 0)
             {
-                return Result<GetUserListQueryResult>.Success(new(new List<AppUser>()));
+                return Result<GetUserListQueryResult>.Success(new(new List<UserListItemDto>()));
             }
 
-            if (users is null)
+            long[] activeUsers = await _tracker.GetOnlineUsersAsync();
+            
+            foreach(var user in pagedUsers)
             {
-                users = pagedUsers;
-            }
-            else
-            {
-                users.AddRange(pagedUsers);
+                user.IsOnline = activeUsers.Contains(user.Id);
             }
 
-            return Result<GetUserListQueryResult>.Success(new(_cache.Add(CacheKeys.UserList, users)));
+            return Result<GetUserListQueryResult>.Success(new(pagedUsers));
         }
     }
 
-    public record GetUserListQueryResult(ICollection<AppUser> Users);
-
-
-    #region Cache Keys
-    public class CacheKeys
-    {
-        public static string UserList => "users.list";
-    }
-    #endregion
+    public record GetUserListQueryResult(ICollection<UserListItemDto> Users);
 }

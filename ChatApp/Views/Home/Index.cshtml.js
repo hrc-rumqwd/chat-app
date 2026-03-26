@@ -102,7 +102,7 @@ function createChatItem(thumbnail, senderName, content, sentAt) {
         sentAtTitle = `${timeDifferenceHours <= 1 ? "1 hour" : `${timeDifferenceHours} hours`} ${sentAtTitle}`;
     }
     else if (timeDifferenceDays < 30) {
-        sentAtTitle = `${timeDifferenceHours <= 1 ? "1 day" : `${timeDifferenceHours} days`} ${sentAtTitle}`;
+        sentAtTitle = `${timeDifferenceDays <= 1 ? "1 day" : `${timeDifferenceDays} days`} ${sentAtTitle}`;
     }
 
     li.html(`
@@ -122,23 +122,20 @@ function createChatItem(thumbnail, senderName, content, sentAt) {
     return li;
 }
 
-function createUserItem(thumbnail, name, lastMessage, lastActive) {
-    const li = $("<li>").addClass("p-2 border-bottom");
-    const directChat = $("<a>").addClass("d-flex justify-content-between");
-    li.append(directChat);
+function createUserItem(userId, thumbnail, name, lastMessage, isOnline) {
+    const li = $("<li>").addClass("p-2 border-bottom")
+        .attr("id", userId);
+    const userDisplayItem = $("<div>").addClass("d-flex justify-content-between");
+    li.append(userDisplayItem);
 
-    directChat.html(`
-        <div class="d-flex flex-row">
-            <img src="${thumbnail}" alt="avatar"
-                    class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
-            <div class="pt-1">
-                <p class="fw-bold mb-0">${name}</p>
-                <p class="small text-muted">${lastMessage}</p>
-            </div>
+    userDisplayItem.html(`
+        <div class="pt-1 d-flex flex-row">
+                <img src="${thumbnail}" alt="avatar"
+                class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60" />
+            <p class="fw-bold mb-0">${name}</p>
+            <p class="small text-muted">${lastMessage}</p>
         </div>
-        <div class="pt-1">
-            <p class="small text-muted mb-1">${lastActive}</p>
-        </div>
+        ${isOnline ? `<div><i class="text-success fa fa-solid fa-circle"></i></div>` : `` }
     `);
 
     return li;
@@ -167,7 +164,7 @@ function LoadUsers() {
             const users = data.data.users;
             if (users.length > 0) {
                 users.forEach(user => {
-                    const item = createUserItem("", user.fullName, "", new Date());
+                    const item = createUserItem(user.id, "", user.fullName, "", user.isOnline);
                     userList.append(item);
                 });
                 currentUserPage++; // Prepare for next batch
@@ -193,12 +190,14 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 
 connection.on("ReceiveMessage", (result) => {
-    debugger;
     const li = createChatItem("", result.data.senderName, result.data.content, result.data.sentAt);
     messageBoard.append(li);
 
     messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight"));
 });
+
+connection.on("UserIsOnline", renderOnlineUser);
+connection.on("UserIsOffline", renderOfflineUser);
 
 connection.on("OnSendMessageError", (data) => {
     // Handle the error (e.g., display an error message to the user)
@@ -213,6 +212,21 @@ async function sendMessage(e) {
 
     // Clear the input field after sending the message
     document.getElementById("messageInput").value = "";
+}
+
+function renderOnlineUser(userId) {
+    const userItem = userList.find(`li#${userId} > div`).children("div");
+    if (userItem.length > 0) {
+        const faOnline = $("<div>").append($("<i>").addClass("text-success fa fa-solid fa-circle"))
+        userItem.append(faOnline);
+    }
+}
+
+function renderOfflineUser(userId) {
+    const userItem = userList.find(`li#${userId} > div`).children("div");
+    if (userItem.length > 0) {
+        userItem.find("div > i.fa").remove();
+    }
 }
 
 connection.start();

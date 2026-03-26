@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Users.Queries;
 using ChatApp.Shared.Constants;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,12 +44,23 @@ namespace ChatApp.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserList(int pageIndex, int pageSize)
         {
-            var result = await _broker.QueryAsync(new GetUserListQuery
+            long? currentUserId = null;
+
+            var cookieAuthResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (cookieAuthResult.Succeeded)
             {
-                PageIndex = pageIndex, 
+                currentUserId = long.Parse(cookieAuthResult.Principal.FindFirstValue(IdentityClaims.UserId));
+            }
+
+            var users = await _broker.QueryAsync(new GetUserListQuery
+            {
+                CurrentUserId = currentUserId,
+                PageIndex = pageIndex,
                 PageSize = pageSize
             });
-            return Ok(result);
+
+            return Ok(users);
         }
     }
+
 }

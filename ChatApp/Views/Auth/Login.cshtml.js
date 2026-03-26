@@ -8,7 +8,6 @@
         dataType: 'json',
         data: formObj,
         success: function (data) {
-            debugger;
             if (data.isSuccess) {
                 window.location.href = data.data.returnUrl ?? "/";
             }

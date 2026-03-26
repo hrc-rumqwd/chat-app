@@ -1,8 +1,8 @@
 ﻿using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Caching;
 using ChatApp.Infrastructure.Extensions;
+using ChatApp.Infrastructure.Presence;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +22,8 @@ namespace ChatApp.Infrastructure
             })
                 .AddEntityFrameworkStores<Persistence.Contexts.ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddSingleton<IPresenceTracker, PresenceTracker>();
 
 
             // Caching setup

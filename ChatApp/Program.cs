@@ -8,14 +8,8 @@ using ChatApp.Web.Exceptions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services
-    .AddApplication()
-    .AddInfrastructure(builder.Configuration);
-
-builder.Services.RegisterSignalR();
-
 #region Authorisation
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(cfg => cfg.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(cfg =>
     {
         cfg.LoginPath = "/login";
@@ -30,6 +24,12 @@ builder.Services.ConfigureApplicationCookie(cfg =>
     cfg.LoginPath = "/login";
 });
 #endregion
+
+builder.Services
+    .AddApplication()
+    .AddInfrastructure(builder.Configuration);
+
+builder.Services.RegisterSignalR();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
