@@ -59,6 +59,12 @@ namespace ChatApp.Infrastructure.Presence
             return Task.FromResult(_onlineUsers.Keys.ToArray());
         }
 
+        public Task<string[]> GetUserConnectionsAsync(long userId)
+        {
+            _onlineUsers.TryGetValue(userId, out var connectionIds);
+            return Task.FromResult(connectionIds?.ToArray() ?? []);
+        }
+
         public Task<bool> IsUserOnline(long userId)
         {
             return Task.FromResult(_onlineUsers.TryGetValue(userId, out _));

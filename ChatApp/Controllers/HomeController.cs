@@ -29,5 +29,12 @@ namespace ChatApp.Controllers
         {
             return View();
         }
+
+        [HttpGet("/conversations/create")]
+        [AllowAnonymous]
+        public IActionResult CreateConversationPartialView()
+        {
+            return PartialView("~/Views/Shared/Components/_AddConversationModal.cshtml");
+        }
     }
 }

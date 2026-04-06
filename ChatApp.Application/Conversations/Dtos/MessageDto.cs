@@ -1,6 +1,4 @@
-﻿using ChatApp.Shared.Models.Users.Dtos;
-
-namespace ChatApp.Shared.Models.Messages.Dtos
+﻿namespace ChatApp.Application.Conversations.Dtos
 {
     public class MessageDto
     {
@@ -8,6 +6,6 @@ namespace ChatApp.Shared.Models.Messages.Dtos
         public string Content { get; set; }
         public DateTime SendAt { get; set; }
         public long SendBy { get; set; }
-        public UserTinyViewDto Author { get; set; }
+        public MessageAuthorDto Author { get; set; }
     }
 }

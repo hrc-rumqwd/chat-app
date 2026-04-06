@@ -8,6 +8,7 @@ namespace ChatApp.Infrastructure.Persistence.Contexts.Interceptos
     {
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
+            DateTime now = DateTime.UtcNow;
             if (eventData.Context is not null)
             {
                 var auditEntities = eventData.Context.ChangeTracker.Entries<IAuditableEntity>();
@@ -15,12 +16,12 @@ namespace ChatApp.Infrastructure.Persistence.Contexts.Interceptos
                 {
                     if (entity.State == EntityState.Added)
                     {
-                        entity.Entity.CreatedAt = DateTime.UtcNow;
-                        entity.Entity.UpdatedAt = DateTime.UtcNow;
+                        entity.Entity.CreatedAt = now;
+                        entity.Entity.UpdatedAt = now;
                     }
                     else if (entity.State == EntityState.Modified)
                     {
-                        entity.Entity.UpdatedAt = DateTime.UtcNow;
+                        entity.Entity.UpdatedAt = now;
                     }
                 }
             }

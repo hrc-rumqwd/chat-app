@@ -3,6 +3,7 @@ using System;
 using ChatApp.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ChatApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331094450_ChangeDatabaseSchema")]
+    partial class ChangeDatabaseSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,13 +172,11 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsGroup")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("LastMessageAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastMessageContent")
-                        .HasColumnType("text");
+                    b.Property<long>("RoomId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -267,10 +268,6 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserDisplayName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("UserId")
@@ -408,7 +405,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ChatApp.Data.Entities.UserConversation", b =>
                 {
                     b.HasOne("ChatApp.Data.Entities.Conversation", "Conversation")
-                        .WithMany("Participants")
+                        .WithMany("UserConversations")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -486,7 +483,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 {
                     b.Navigation("Messages");
 
-                    b.Navigation("Participants");
+                    b.Navigation("UserConversations");
                 });
 #pragma warning restore 612, 618
         }

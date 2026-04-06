@@ -32,7 +32,7 @@ namespace ChatApp.Application.Chat.Queries
                 {
                     // Map properties from Message to GetMessagesQueryResult
                     Content = x.Content,
-                    SenderId = x.UserId,
+                    SenderId = x.SenderId,
                     SentAt = x.CreatedAt
                 })
                 .ToListAsync();

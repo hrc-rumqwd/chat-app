@@ -1,30 +1,30 @@
-﻿let isLoading = false;
+﻿const defaultPageIndex = 1;
+const defaultPageOffset = 10;
+const hostDomain = "https://localhost:7079";
+const maxContentLength = 20;
+
+let isLoading = false;
 let currentUserPage = 1;
 let currentMessagePage = 1;
 let isFetchingOlderMessages = false;
+let currentConversationId = null;
+let currentConversationIndex = 0;
+
+let observer = undefined;
+let topObserver = undefined;
 
 const userList = $("ul#userList");
 const trigger = $("div#loadingTrigger");
 const messageBoard = $("ul#messageBoard");
 const topSentiel = $("div#topSentinel");
 
-const observer = new IntersectionObserver((entries) => {
-    // If the sentinel is visible, load more!
-    if (entries[0].isIntersecting) {
-        LoadUsers();
-    }
-}, { threshold: 1.0 });
-observer.observe(trigger[0]);
 
-const topObserver = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && !isFetchingOlderMessages) {
-        getChatHistory();
-    }
-}, { threshold: 1.0 });
-topObserver.observe(topSentiel[0]);
+const hubConnection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs/chat")
+    .build();
 
-function getCurrentUserInfo() {
-    $.ajax({
+async function getCurrentUserInfo() {
+    await $.ajax({
         url: '/api/users/current',
         type: 'GET',
         xhrFields: {
@@ -37,122 +37,11 @@ function getCurrentUserInfo() {
             if (xhr.status == 401)
                 console.log("Unauthorized");
         }
-    })
-}
-
-function getChatHistory() {
-    isFetchingOlderMessages = true;
-
-    // Capture the height before adding new messages
-    const previousHeight = messageBoard.prop("scrollHeight");
-
-    // Fetching older messages
-    $.ajax({
-        url: `/api/chat?pageIndex=${currentMessagePage}&pageSize=10`,
-        type: 'GET',
-        xhrFields: {
-            withCredentials: true
-        },
-        success: function (data) {
-            if (data.data.length > 0) {
-                data.data
-                    .forEach(message => {
-                        // Prepend messages (add them AFTER the sentinel but BEFORE existing messages)
-                        const item = createChatItem("/images/avatar.png", message.senderName, message.content, message.sentAt);
-                        // Insert after the sentinel
-                        topSentiel.after(item);
-                    });
-
-                // Adjust scroll position so the user doesn't lose their place
-                // New Height - Old Height = The exact distance to maintain the view
-                messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight") - previousHeight);
-                currentMessagePage += 1;
-            }
-            else {
-                topObserver.unobserve(topSentiel[0]);
-            }
-
-            isFetchingOlderMessages = false;
-        },
-        error: function (data) {
-            if (data.status == 400)
-                console.log(data);
-        }
-    })
-}
-
-function createChatItem(thumbnail, senderName, content, sentAt) {
-    const li = $('<li>').addClass('d-flex justify-content-between mb-4');
-    let sentAtTitle = "ago";
-
-    // Calculate sent at time with current time
-    const current = new Date();
-    const sentAtDate = new Date(Date.parse(sentAt));
-
-    // this calculate the time difference in miliseconds
-    const duration = current - sentAtDate;
-    const timeDifferenceMins = Math.floor(duration / 60000);
-    const timeDifferenceHours = Math.floor(duration / 3600000);
-    const timeDifferenceDays = Math.floor(duration / 86400000);
-
-    if (timeDifferenceMins < 60) {
-        sentAtTitle = `${timeDifferenceMins < 60000 ? "1 minute" : `${timeDifferenceMins} minutes`} ${sentAtTitle}`;
-    }
-    else if (timeDifferenceHours < 24) {
-        sentAtTitle = `${timeDifferenceHours <= 1 ? "1 hour" : `${timeDifferenceHours} hours`} ${sentAtTitle}`;
-    }
-    else if (timeDifferenceDays < 30) {
-        sentAtTitle = `${timeDifferenceDays <= 1 ? "1 day" : `${timeDifferenceDays} days`} ${sentAtTitle}`;
-    }
-
-    li.html(`
-        <img src="${thumbnail}" alt="avatar"
-            class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between p-3">
-                    <p class="fw-bold mb-0">${senderName}</p>
-                    <p class="text-muted small mb-0"><i class="far fa-clock"></i> ${sentAtTitle}</p>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">${content}</p>
-                </div>
-            </div>
-    `);
-
-    return li;
-}
-
-function createUserItem(userId, thumbnail, name, lastMessage, isOnline) {
-    const li = $("<li>").addClass("p-2 border-bottom")
-        .attr("id", userId);
-    const userDisplayItem = $("<div>").addClass("d-flex justify-content-between");
-    li.append(userDisplayItem);
-
-    userDisplayItem.html(`
-        <div class="pt-1 d-flex flex-row">
-                <img src="${thumbnail}" alt="avatar"
-                class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60" />
-            <p class="fw-bold mb-0">${name}</p>
-            <p class="small text-muted">${lastMessage}</p>
-        </div>
-        ${isOnline ? `<div><i class="text-success fa fa-solid fa-circle"></i></div>` : `` }
-    `);
-
-    return li;
-}
-
-function fetchUsers(pageIndex, pageSize, onSuccess) {
-    $.ajax({
-        url: `/api/users?pageIndex=${pageIndex}&pageSize=${pageSize}`,
-        type: 'GET',
-        xhrFields: {
-            withCredentials: true
-        },
-        success: onSuccess
     });
 }
 
-function LoadUsers() {
+async function loadConversations(pageIndex, pageSize, onSuccess) {
+
     if (isLoading) return;  // Prevent double-triggering
     isLoading = true;
 
@@ -160,18 +49,13 @@ function LoadUsers() {
     skeleton.css("display", "block");
 
     try {
-        fetchUsers(currentUserPage, 10, function (data) {
-            const users = data.data.users;
-            if (users.length > 0) {
-                users.forEach(user => {
-                    const item = createUserItem(user.id, "", user.fullName, "", user.isOnline);
-                    userList.append(item);
-                });
-                currentUserPage++; // Prepare for next batch
-            }
-            else {
-                observer.unobserve(trigger[0]);
-            }
+        await $.ajax({
+            url: `/api/conversations?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+            type: 'GET',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: onSuccess
         });
     }
     catch (error) {
@@ -183,53 +67,344 @@ function LoadUsers() {
     }
 }
 
-getCurrentUserInfo();
+function createMemberItem(userId, thumbnail, name, lastMessage, isOnline, onClickItem) {
+    const li = $("<li>").addClass("p-2 border-bottom")
+        .attr("id", userId);
 
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/hubs/chat")
-    .build();
+    // Click event for fetching conversation
+    li.bind("click", onClickItem);
 
-connection.on("ReceiveMessage", (result) => {
+    const userDisplayItem = $("<div>").addClass("d-flex justify-content-between");
+    li.append(userDisplayItem);
+
+    userDisplayItem.html(`
+        <div class="pt-1 d-flex flex-row">
+            <img src="${thumbnail}" alt="avatar"
+            class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60" />
+            <div class="container-fluid d-flex flex-column">
+                <p class="fw-bold mb-0">${name}</p>
+                <p class="small text-muted m-0 last-message-area">${truncateLongContent(lastMessage ?? `Say hello for the first time!`)}</p>
+            </div>
+        </div>
+        ${isOnline ? `<div><i class="text-success fa fa-solid fa-circle"></i></div>` : ``}
+    `);
+
+    return li;
+}
+
+async function loadConversationMessages(conversationId, pageIndex, pageSize) {
+    if (conversationId == null)
+        return;
+
+    isFetchingOlderMessages = true;
+
+    // Capture the height before adding new messages
+    const previousHeight = messageBoard.prop("scrollHeight");
+
+    // Fetching older messages
+    await $.ajax({
+        url: `/api/conversations/${conversationId}?pageIndex=${pageIndex}&pageSize=${pageSize}`,
+        type: 'GET',
+        xhrFields: {
+            withCredentials: true
+        },
+        success: (data) => renderConversationMessages(data),
+        error: function (data) {
+            //if (data.status == 400)
+            //    console.log(data);
+        }
+    });
+}
+
+function createChatItem(thumbnail, senderName, content, sentAt) {
+    const li = $('<li>').addClass('d-flex justify-content-between mb-4');
+    let sentAtLabel = "";
+
+    // Calculate sent at time with current time
+    const current = new Date();
+    const sentAtDate = new Date(sentAt);
+
+    sentAtLabel += `${sentAtDate.getHours()}:${sentAtDate.getMinutes()} ${sentAtDate.toLocaleDateString("en-US")}`;
+
+    li.html(`
+        <img src="${thumbnail}" alt="avatar"
+            class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between p-3">
+                    <p class="fw-bold mb-0">${senderName}</p>
+                    <p class="text-muted small mb-0"><i class="far fa-clock"></i> ${sentAtLabel}</p>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">${content}</p>
+                </div>
+            </div>
+    `);
+
+    return li;
+}
+
+function StartSignalR() {
+    hubConnection.on("ReceiveMessage", (result) => {
+        const isSender = isMessageSender(result.data.senderId);
+
+        // Show new message on member list
+        updateNewMessageToMemberBoard(result, !isSender);
+
+        // Check user is opening that sender board, then showing message on board too
+        updateNewMessageToConversationBoard(result);
+    });
+
+    //connection.on("UserIsOnline", renderOnlineUser);
+    //connection.on("UserIsOffline", renderOfflineUser);
+
+    hubConnection.on("OnSendMessageError", (data) => {
+        // Handle the error (e.g., display an error message to the user)
+        console.error(data.data.error);
+    });
+
+    hubConnection.start();
+}
+
+function updateNewMessageToMemberBoard(result, activeText) {
+    const item = userList.find(`li#${result.data.conversationId}`);
+    const lastMessageLabel = item.find('p.last-message-area');
+    lastMessageLabel.text(truncateLongContent(result.data.content));
+    if (activeText)
+        lastMessageLabel.addClass("text-active");
+}
+
+function createNotificationDot() {
+}
+
+function updateNewMessageToConversationBoard(result) {
     const li = createChatItem("", result.data.senderName, result.data.content, result.data.sentAt);
     messageBoard.append(li);
-
     messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight"));
-});
-
-connection.on("UserIsOnline", renderOnlineUser);
-connection.on("UserIsOffline", renderOfflineUser);
-
-connection.on("OnSendMessageError", (data) => {
-    // Handle the error (e.g., display an error message to the user)
-    console.error(data.data.error);
-});
+}
 
 async function sendMessage(e) {
     const userInfo = JSON.parse(localStorage.getItem('currentUser'));
-    const message = document.getElementById("messageInput").value;
+    const conversationId = getOpeningConversationId();
+    const content = document.getElementById("messageInput").value;
 
-    await connection.invoke("SendMessage", message, userInfo.id);
+    await hubConnection.invoke("SendMessage", content, userInfo.id, conversationId);
 
     // Clear the input field after sending the message
     document.getElementById("messageInput").value = "";
 }
 
-function renderOnlineUser(userId) {
-    const userItem = userList.find(`li#${userId} > div`).children("div");
-    if (userItem.length > 0) {
-        const faOnline = $("<div>").append($("<i>").addClass("text-success fa fa-solid fa-circle"))
-        userItem.append(faOnline);
+function getOpeningConversationId() {
+    return parseInt(
+        userList.find('li')[currentConversationIndex]
+            .getAttribute('id')
+    );
+}
+
+function getConversationInfoById(id) {
+    const li = userList.find(`li#${id}`);
+
+    if (li == undefined)
+        return { id, name: null };
+    const name = li.find('p.fw-bold.b-0').val();
+    return { id, name };
+}
+
+function renderMemberItems(apiData) {
+    const conversations = apiData.data;
+    if (conversations.length > 0) {
+        conversations.forEach(user => {
+            const item = createMemberItem(user.id, user.displayImage, user.displayName, user.lastMessage, user.isOnline, loadConversationByClick);
+            userList.append(item);
+        });
+        currentUserPage++; // Prepare for next batch
+    }
+    else {
+        observer.unobserve(trigger[0]);
     }
 }
 
-function renderOfflineUser(userId) {
-    const userItem = userList.find(`li#${userId} > div`).children("div");
-    if (userItem.length > 0) {
-        userItem.find("div > i.fa").remove();
-    }
+async function loadConversationByClick() {
+    // Active conversation on member board
+    userList.children('li.active-item').removeClass('active-item');
+    const clickedItem = $(this).addClass('active-item');
+    const conversationId = parseInt($(this).attr('id'));
+
+    // Load conversation from API into message board
+    await loadConversationMessages(conversationId, defaultPageIndex, defaultPageOffset);
 }
 
-connection.start();
+function renderConversationMessages(apiData) {
+    messageBoard.children("li.d-flex.justify-content-between.mb-4").remove();
+
+    if (apiData.data.length > 0) {
+        apiData.data
+            .forEach(message => {
+                // Prepend messages (add them AFTER the sentinel but BEFORE existing messages)
+                const item = createChatItem(message.author.avatar, message.author.displayName, message.content, message.sendAt);
+                // Insert after the sentinel
+                topSentiel.after(item);
+            });
+
+        // Adjust scroll position so the user doesn't lose their place
+        // New Height - Old Height = The exact distance to maintain the view
+        const previousHeight = messageBoard.prop("scrollHeight");
+        messageBoard.prop("scrollTop", messageBoard.prop("scrollHeight") - previousHeight);
+        currentMessagePage += 1;
+    }
+    else {
+        topObserver.unobserve(topSentiel[0]);
+    }
+
+    isFetchingOlderMessages = false;
+}
+
+function activeMemberCard(index) {
+    const firstItem = userList.find("li");
+    if (firstItem == null || firstItem == undefined)
+        return;
+
+    if (index > userList.length)
+        return;
+
+    firstItem[index].classList.add("active-item");
+}
+
+$(document).ready(async function () {
+    await getCurrentUserInfo();
+
+    observer = new IntersectionObserver(async (entries) => {
+        // If the sentinel is visible, load more!
+        if (entries[0].isIntersecting) {
+            await loadConversations(currentUserPage, defaultPageOffset, renderMemberItems);
+            activeMemberCard(currentConversationIndex);
+            const conversationId = userList.children("li").attr("id");
+            await loadConversationMessages(conversationId, currentMessagePage, defaultPageOffset, renderConversationMessages);
+        }
+    }, { threshold: 1.0 });
+    observer.observe(trigger[0]);
+
+    topObserver = new IntersectionObserver(async (entries) => {
+        if (entries[0].isIntersecting && !isFetchingOlderMessages) {
+            await loadConversationMessages(currentConversationId, currentMessagePage, defaultPageOffset, renderConversationMessages, null);
+        }
+    }, { threshold: 1.0 });
+    topObserver.observe(topSentiel[0]);
+
+    //currentConversationId = userList.children("li").attr("id");
+    if (currentConversationId != undefined) {
+        await loadConversationMessages(currentConversationId, defaultPageIndex, defaultPageOffset, renderConversationMessages, null);
+    }
+
+    StartSignalR();
+});
+
+function showAddConversationModal() {
+    // Check the modal is still exists or not
+    $.ajax({
+        url: "/conversations/create",
+        type: "GET",
+        success: function (data) {
+            $("#conversationModalContainer").html(data);
+
+            $("#addConversationModal").on('shown.bs.modal', function () {
+                $('.member-list').select2({
+                    dropdownParent: $('#addConversationModal'),
+                    width: '100%', // Ensures the select fills the container correctly
+                    ajax: {
+                        url: `${hostDomain}/api/members`,
+                        data: function (params) {
+                            var query = {
+                                search: params.term,
+                                pageIndex: defaultPageIndex,
+                                pageSize: defaultPageOffset
+                            }
+                            return query;
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        processResults: function (data) {
+                            $.each(data.data, (i, m) => {
+                                data.data[i]['text'] = m.displayName;
+                            });
+
+                            return { results: data.data };
+                        }
+                    },
+                });
+            });
+
+
+            $("#addConversationModal").find("button.btn-primary")
+                .on('click', function () {
+                    // Create conversation
+                    const id = $('.member-list').val(); // Get selected members
+                    createConversation(id, function (data) {
+                        // Load messages for the conversation
+                        loadConversationMessages(data.data.id, defaultPageIndex, defaultPageOffset);
+                    });
+
+                    // Close the modal
+                    $("#addConversationModal").modal('hide');
+                });
+
+            $("#addConversationModal").modal('show');
+        }
+    })
+}
+
+function createConversation(userId, onShowChatBoard) {
+    $.ajax({
+        url: `/api/conversations/${userId}`,
+        type: 'POST',
+        xhrFields: {
+            withCredentials: true
+        },
+        success: function (data) {
+            onShowChatBoard(data);
+        }
+    });
+}
 
 
 
+//function renderOfflineUser(userId) {
+//    const userItem = userList.find(`li#${userId} > div`).children("div");
+//    if (userItem.length > 0) {
+//        userItem.find("div > i.fa").remove();
+//    }
+//}
+//function renderOnlineUser(userId) {
+//    const userItem = userList.find(`li#${userId} > div`).children("div");
+//    if (userItem.length > 0) {
+//        const faOnline = $("<div>").append($("<i>").addClass("text-success fa fa-solid fa-circle"))
+//        userItem.append(faOnline);
+//    }
+//}
+
+// SignalR helper functions
+function getCurrentLoggedInUser() {
+    return JSON.parse(localStorage.getItem('currentUser'));
+}
+
+function isMessageReceiver(receiverId) {
+    const user = getCurrentLoggedInUser();
+    const currentUserId = parseInt(user.id);
+    const isReceiver = currentUserId == receiverId;
+}
+
+function isMessageSender(senderId) {
+    const user = getCurrentLoggedInUser();
+    const currentUserId = parseInt(user.id);
+    const isReceiver = currentUserId == senderId;
+}
+
+
+// string prototype extension function
+String.prototype.truncateLongContent = function () {
+    return this.length > maxContentLength ? `${this.slice(0, maxContentLength)}...` : this;
+}
+
+function truncateLongContent(content) {
+    return content.length > maxContentLength ? `${content.slice(0, maxContentLength)}...` : content;
+}

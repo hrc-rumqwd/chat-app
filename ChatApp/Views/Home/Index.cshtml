@@ -8,7 +8,9 @@
 
             <div class="col-md-4 col-lg-4 h-100 d-flex flex-column">
 
-                <h5 class="font-weight-bold mb-3">Member</h5>
+                <h5 class="font-weight-bold mb-3">Member 
+                    <span onclick="showAddConversationModal()"><i class="fa fa-plus fs-6"></i></span>
+                </h5>
 
                 <div class="card flex-grow-1 overflow-hidden">
                     <div class="card-body overflow-y-auto">
@@ -157,6 +159,8 @@
 
     </div>
 </section>
+
+<div id="conversationModalContainer"></div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>

@@ -79,3 +79,17 @@ body {
         background-position: -200% 0;
     }
 }
+
+.active-item {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+    .active-item:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+        transition: .5s ease all;
+    }
+
+.text-active {
+    font-weight: bold;
+    color: rgb(0,0,0);
+}

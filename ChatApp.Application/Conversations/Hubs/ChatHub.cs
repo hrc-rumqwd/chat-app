@@ -1,30 +1,37 @@
 ﻿using ChatApp.Application.Chat.Commands;
 using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Users.Commands;
+using ChatApp.Application.Users.Queries;
 using ChatApp.Shared.Constants;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-namespace ChatApp.Web.Hubs
+namespace ChatApp.Application.Conversations.Hubs
 {
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class ChatHub(
-        IBroker broker
-    ) : Hub
+            IBroker broker
+        ) : Hub
     {
-        public async Task SendMessage(string message, long userId)
+        public async Task SendMessage(string message, long userId, long conversationId)
         {
-            var sendMessageResult = await broker.CommandAsync(new SendMessageCommand(userId, message));
-            
-            if(sendMessageResult.IsSuccess != true)
+            var sendMessageResult = await broker.CommandAsync(new SendMessageCommand(message, userId, conversationId));
+
+            if (sendMessageResult.IsSuccess != true)
             {
                 await Clients.Caller.SendAsync("OnSendMessageError", sendMessageResult);
                 return;
             }
 
-            await Clients.All.SendAsync("ReceiveMessage", sendMessageResult);
+            await Clients.Caller.SendAsync("ReceiveMessage", sendMessageResult);
+
+            var connectionIds = await broker.QueryAsync(new GetUserConnectionsQuery(sendMessageResult.Data.ReceiverId));
+
+            // Only send realtime message if receiver is online, otherwise just save message to database and wait for receiver to get it when they come online
+            if (connectionIds.Data.Length > 0)
+                await Clients.Clients(connectionIds.Data).SendAsync("ReceiveMessage", sendMessageResult);
         }
 
         // For update user status

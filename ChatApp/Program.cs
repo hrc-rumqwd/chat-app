@@ -2,8 +2,8 @@ using ChatApp.Infrastructure;
 using ChatApp.Application;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ChatApp.Web.Extensions;
-using ChatApp.Web.Hubs;
 using ChatApp.Web.Exceptions;
+using ChatApp.Application.Conversations.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
