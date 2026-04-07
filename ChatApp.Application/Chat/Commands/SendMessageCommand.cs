@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Contracts.Brokers;
+﻿using ChatApp.Application.Chat.Dtos;
+using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
@@ -23,8 +24,8 @@ namespace ChatApp.Application.Chat.Commands
 
             var conversation = await dbContext.Conversations
                 .Where(x => x.Id == request.ConversationId)
-                .Include(c => c.Participants)
-                .ThenInclude(c => c.User)
+                    .Include(c => c.Participants)
+                        .ThenInclude(c => c.User)
                 .Select(c => new Conversation
                 {
                     Id = c.Id,
@@ -67,16 +68,42 @@ namespace ChatApp.Application.Chat.Commands
 
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return Result<SendMessageCommandResult>.Success(new SendMessageCommandResult()
+            var result = new SendMessageCommandResult()
             {
                 SenderId = request.SenderId,
                 SenderName = conversation.Participants.FirstOrDefault(p => p.UserId == request.SenderId).UserDisplayName,
-                ReceiverId = conversation.Participants.FirstOrDefault(p => p.UserId != request.SenderId)?.UserId ?? 0,
-                ReceiverName = conversation.Participants.FirstOrDefault(p => p.UserId != request.SenderId).UserDisplayName,
+                IsGroup = conversation.IsGroup,
                 Content = request.Content,
                 ConversationId = conversation.Id,
                 SentAt = m.CreatedAt,
-            });
+            };
+
+            if (!conversation.IsGroup)
+            {
+                var receiver = conversation.Participants.FirstOrDefault(p => p.UserId != request.SenderId);
+                result.OneToOneReceiver = new ParticipantDto
+                {
+                    Id = receiver.Id,
+                    DisplayName = receiver.UserDisplayName,
+                };
+            }
+            else
+            {
+                result.Participants = new List<ParticipantDto>();
+                conversation.Participants
+                    .Where(p => p.UserId != request.SenderId)
+                    .ToList()
+                    .ForEach(r =>
+                    {
+                        result.Participants.Add(new ParticipantDto
+                        {
+                            Id = r.Id,
+                            DisplayName = r.UserDisplayName,
+                        });
+                    });
+            }
+
+            return Result<SendMessageCommandResult>.Success(result);
         }
 
         private bool IsUserInConversation(Conversation conversation, long userId)
@@ -88,8 +115,9 @@ namespace ChatApp.Application.Chat.Commands
         public long SenderId { get; set; }
         public string SenderName { get; set; }
         public long ConversationId { get; set; }
-        public long ReceiverId { get; set; }
-        public string ReceiverName { get; set; }
+        public bool IsGroup { get; set; }
+        public ParticipantDto OneToOneReceiver { get; set; }
+        public ICollection<ParticipantDto> Participants { get; set; }
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
     }

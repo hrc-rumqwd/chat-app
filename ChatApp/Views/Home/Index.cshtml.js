@@ -67,9 +67,9 @@ async function loadConversations(pageIndex, pageSize, onSuccess) {
     }
 }
 
-function createMemberItem(userId, thumbnail, name, lastMessage, isOnline, onClickItem) {
+function createMemberItem(conversationId, thumbnail, name, lastMessage, isOnline, onClickItem) {
     const li = $("<li>").addClass("p-2 border-bottom")
-        .attr("id", userId);
+        .attr("id", conversationId);
 
     // Click event for fetching conversation
     li.bind("click", onClickItem);
@@ -173,9 +173,6 @@ function updateNewMessageToMemberBoard(result, activeText) {
         lastMessageLabel.addClass("text-active");
 }
 
-function createNotificationDot() {
-}
-
 function updateNewMessageToConversationBoard(result) {
     const li = createChatItem("", result.data.senderName, result.data.content, result.data.sentAt);
     messageBoard.append(li);
@@ -223,8 +220,19 @@ function renderMemberItems(apiData) {
     }
 }
 
+function appendNewItemToMemberBoard(conversationId, thumbnail, displayName, message, sentAt) {
+    const li = createMemberItem(conversationId, thumbnail, displayName, message, false, loadConversationByClick);
+    userList.children('li.active-item').removeClass('active-item');
+    li.addClass('active-item');
+    userList.prepend(li);
+}
+
 async function loadConversationByClick() {
     // Active conversation on member board
+    if ($(this).hasClass('active-item')) {
+        return;
+    }
+
     userList.children('li.active-item').removeClass('active-item');
     const clickedItem = $(this).addClass('active-item');
     const conversationId = parseInt($(this).attr('id'));
@@ -338,8 +346,11 @@ function showAddConversationModal() {
             $("#addConversationModal").find("button.btn-primary")
                 .on('click', function () {
                     // Create conversation
-                    const id = $('.member-list').val(); // Get selected members
-                    createConversation(id, function (data) {
+                    const ids = $('.member-list').val(); // Get selected members
+                    createConversation(ids, function (data) {
+                        // Create item on member board
+                        appendNewItemToMemberBoard(data.data.id, null, data.data.displayName, data.data.lastMessage, new Date());
+
                         // Load messages for the conversation
                         loadConversationMessages(data.data.id, defaultPageIndex, defaultPageOffset);
                     });
@@ -353,19 +364,33 @@ function showAddConversationModal() {
     })
 }
 
-function createConversation(userId, onShowChatBoard) {
-    $.ajax({
-        url: `/api/conversations/${userId}`,
-        type: 'POST',
-        xhrFields: {
-            withCredentials: true
-        },
-        success: function (data) {
-            onShowChatBoard(data);
-        }
-    });
-}
+function createConversation(userIds, onShowChatBoard) {
+    // Create only one to one conversation
+    if (userIds.length == 1) {
+        $.ajax({
+            url: `/api/conversations/${userIds}`,
+            type: 'POST',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: data => onShowChatBoard(data)
+        });
+    }
 
+    // Create group conversation
+    else if (userIds.length > 1) {
+        $.ajax({
+            url: `/api/conversations/group`,
+            type: 'POST',
+            data: { userIds: [...userIds] },
+            success: data => onShowChatBoard(data)
+        });
+    }
+    else {
+        // TODO: Show error notification instead of console log
+        console.error("Please select at least one user to create conversation.");
+    }
+}
 
 
 //function renderOfflineUser(userId) {

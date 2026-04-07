@@ -27,11 +27,29 @@ namespace ChatApp.Application.Conversations.Hubs
 
             await Clients.Caller.SendAsync("ReceiveMessage", sendMessageResult);
 
-            var connectionIds = await broker.QueryAsync(new GetUserConnectionsQuery(sendMessageResult.Data.ReceiverId));
+            #region One-to-One chat
+            // Searching for receiver's connection id to send realtime message
+            if (!sendMessageResult.Data.IsGroup)
+            {
+                var connectionIds = await broker.QueryAsync(new GetUserConnectionsQuery(sendMessageResult.Data.OneToOneReceiver.Id));
+                // Only send realtime message if receiver is online, otherwise just save message to database and wait for receiver to get it when they come online
+                if (connectionIds.Data.Length > 0)
+                    await Clients.Clients(connectionIds.Data).SendAsync("ReceiveMessage", sendMessageResult);
+            }
+            #endregion
 
-            // Only send realtime message if receiver is online, otherwise just save message to database and wait for receiver to get it when they come online
-            if (connectionIds.Data.Length > 0)
-                await Clients.Clients(connectionIds.Data).SendAsync("ReceiveMessage", sendMessageResult);
+            #region Group chat
+            // Search for multi member's connection ids to send realtime message
+            if(sendMessageResult.Data.IsGroup)
+            {
+                var connectionIds = await broker.QueryAsync(new GetUsersConnectionsQuery(sendMessageResult.Data.Participants.Select(c => c.Id)));
+                var receivedClients = connectionIds.Data
+                    .Where(c => c.Value.Length > 0) // Only send realtime message to online users
+                    .SelectMany(c => c.Value);
+
+                await Clients.Clients(receivedClients).SendAsync("ReceiveMessage", sendMessageResult);
+            }    
+            #endregion
         }
 
         // For update user status

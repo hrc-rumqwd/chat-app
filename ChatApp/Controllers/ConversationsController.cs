@@ -65,5 +65,17 @@ namespace ChatApp.Web.Controllers
                 ? Ok(result)
                 : BadRequest(result.Error);
         }
+
+        [HttpPost("group")]
+        [Authorize]
+        public async Task<IActionResult> CreateGroupConversation(CreateGroupConversationCommand command)
+        {
+            long currentUserId = await HttpContext.GetUserIdAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            command.HostUserId = currentUserId;
+            var result = await _broker.CommandAsync(command);
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
     }
 }

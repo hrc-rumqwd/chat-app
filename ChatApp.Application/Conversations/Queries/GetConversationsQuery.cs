@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Conversations.Dtos;
+using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Infrastructure.Presence;
 using ChatApp.Shared.Models.Commons;
@@ -53,6 +54,7 @@ namespace ChatApp.Application.Conversations.Queries
                     LastMessageAt = x.Conversation.LastMessageAt,
                 })
                 .OrderByDescending(c => c.LastMessageAt)
+                .PaginatedQuery(request.PageIndex, request.PageSize)
                 .ToListAsync(cancellationToken);
 
             await HydrateOnlineStatusAsync(conversations);
