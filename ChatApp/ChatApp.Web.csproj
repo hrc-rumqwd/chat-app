@@ -4,6 +4,11 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<InformationalVersion>$(Version)</InformationalVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

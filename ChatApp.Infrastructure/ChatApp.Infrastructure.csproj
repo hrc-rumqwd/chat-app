@@ -1,18 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-  <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="2.12.4" />
-  </ItemGroup>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<InformationalVersion>$(Version)</InformationalVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ChatApp.Data\ChatApp.Data.csproj" />
-    <ProjectReference Include="..\ChatApp.Shared\ChatApp.Shared.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="StackExchange.Redis" Version="2.12.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ChatApp.Data\ChatApp.Data.csproj" />
+		<ProjectReference Include="..\ChatApp.Shared\ChatApp.Shared.csproj" />
+	</ItemGroup>
 
 </Project>
