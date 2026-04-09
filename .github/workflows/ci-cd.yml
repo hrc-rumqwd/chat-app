@@ -117,7 +117,7 @@ jobs:
     # # This updates our app's version based on Git history
     
   deploy: # Second job
-    run-ons: self-hosted
+    runs-on: self-hosted
 
     steps:
       - name: Download Artifact # the uploaded files in the previous step
