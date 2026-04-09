@@ -27,11 +27,12 @@ jobs:
   # - Linux (ubuntu-latest): This is best for most .NET Core projects
   # - Windows (windows-latest): This will be good for .NET Framework or Windows-specific builds
   # - macOS (macos-latest): iOS or macOS apps
-    runs-on: ubuntu-latest # For building chat app with .NET Core, so this is the best, because it fast and works well with cross-platform .NET apps
+    # runs-on: ubuntu-latest # For building chat app with .NET Core, so this is the best, because it fast and works well with cross-platform .NET apps
+    runs-on: self-hosted # Setup in GitHub Actions runner, for localhost
 
     # Step by step for the job
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v4
 
     # Installing .NET SDK
@@ -85,28 +86,50 @@ jobs:
       run: dotnet publish -c Release -o ./publish
     # This above builds the app and puts the files in a `publish` directory
 
-    # For web apps, we might want a Web Deploy package
-    - name: Create Web Deploy Package
-      run: msbuild /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="./publish"
-    # This creates a zip with the app and deployment scripts
-
-    # Managing versions
-    # Versioning helps track changes
-
-    # Install GitVersion
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.7
+    - name: Upload Artifact #we will download this on deployment
+      uses: actions/upload-artifact@v4
       with:
-        versionSpec: '5.x'
+        name: umbraco-published
+        path: ./publish
 
-    # Get the version:
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v0.9.7
+    # # For web apps, we might want a Web Deploy package
+    # - name: Create Web Deploy Package
+    #   run: msbuild /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="./publish"
+    # # This creates a zip with the app and deployment scripts
 
-    # Use it in our build:
-    - name: Build
-      run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
-    # This updates our app's version based on Git history
+    # # Managing versions
+    # # Versioning helps track changes
+
+    # # Install GitVersion
+    # - name: Install GitVersion
+    #   uses: gittools/actions/gitversion/setup@v0.9.7
+    #   with:
+    #     versionSpec: '5.x'
+
+    # # Get the version:
+    # - name: Determine Version
+    #   id: gitversion
+    #   uses: gittools/actions/gitversion/execute@v0.9.7
+
+    # # Use it in our build:
+    # - name: Build
+    #   run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
+    # # This updates our app's version based on Git history
     
+  deploy: # Second job
+    run-ons: self-hosted
+
+    steps:
+      - name: Download Artifact # the uploaded files in the previous step
+        uses: actions/download-artifact@v4
+        with:
+          name: umbraco-published
+          path: C:\inetpub\wwwroot\Umbraco
+
+      # Restart IIS to Apply Changes
+      - name: Restart IIS
+        shell: powershell
+        run: |
+          iisreset /restart
+          Write-Host "IIS restarted successfully!"
     
