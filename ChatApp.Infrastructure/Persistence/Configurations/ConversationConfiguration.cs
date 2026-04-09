@@ -9,17 +9,17 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Conversation> builder)
         {
-            builder.ToTable("Conversations");
-            builder.HasKey(g => g.Id);
+            _ = builder.ToTable("Conversations");
+            _ = builder.HasKey(g => g.Id);
 
-            builder.Property(g => g.Title)
+            _ = builder.Property(g => g.Title)
                 .HasMaxLength(100);
 
-            builder.HasMany(m => m.Messages)
+            _ = builder.HasMany(m => m.Messages)
                 .WithOne(c => c.Conversation)
                 .HasForeignKey(f => f.ConversationId);
 
-            builder.HasMany(m => m.Participants)
+            _ = builder.HasMany(m => m.Participants)
                 .WithOne(c => c.Conversation)
                 .HasForeignKey(f => f.ConversationId);
 

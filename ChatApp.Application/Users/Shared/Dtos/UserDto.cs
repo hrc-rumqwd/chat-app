@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Application.Users.Shared.Dtos
+﻿namespace ChatApp.Application.Users.Shared.Dtos
 {
     public class UserDto
     {

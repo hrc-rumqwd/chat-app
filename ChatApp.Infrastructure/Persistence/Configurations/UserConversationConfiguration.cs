@@ -9,12 +9,12 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<UserConversation> builder)
         {
-            builder.ToTable("UserConversations");
+            _ = builder.ToTable("UserConversations");
 
             builder.ApplyAuditableEntityConfiguration();
             builder.ApplyRemovableEntityConfiguration();
 
-            builder.HasOne(c => c.User)
+            _ = builder.HasOne(c => c.User)
                 .WithMany(c => c.UserConversations)
                 .HasForeignKey(f => f.UserId);
         }

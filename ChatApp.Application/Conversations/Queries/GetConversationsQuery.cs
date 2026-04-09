@@ -13,22 +13,16 @@ namespace ChatApp.Application.Conversations.Queries
         public long UserId { get; set; }
     }
 
-    public class GetConversationsQueryHandler : IQueryHandler<GetConversationsQuery, Result<ICollection<ConversationDto>>>
+    public class GetConversationsQueryHandler(
+        ApplicationDbContext context,
+        IPresenceTracker presenceTracker) : IQueryHandler<GetConversationsQuery, Result<ICollection<ConversationDto>>>
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IPresenceTracker _presenceTracker;
-
-        public GetConversationsQueryHandler(
-            ApplicationDbContext context,
-            IPresenceTracker presenceTracker)
-        {
-            _context = context;
-            _presenceTracker = presenceTracker;
-        }
+        private readonly ApplicationDbContext _context = context;
+        private readonly IPresenceTracker _presenceTracker = presenceTracker;
 
         public async Task<Result<ICollection<ConversationDto>>> Handle(GetConversationsQuery request, CancellationToken cancellationToken)
         {
-            var conversations = await _context.UserConversations
+            List<ConversationDto> conversations = await _context.UserConversations
                 .Where(x => x.UserId == request.UserId)
                 .Include(x => x.Conversation)
                     .ThenInclude(c => c.Participants)
@@ -64,11 +58,11 @@ namespace ChatApp.Application.Conversations.Queries
 
         private async Task HydrateOnlineStatusAsync(ICollection<ConversationDto> conversations)
         {
-            var oneOneOneConversations = conversations
+            List<ConversationDto> oneOneOneConversations = conversations
                 .Where(c => !c.IsGroup)
                 .ToList();
 
-            foreach (var conversation in oneOneOneConversations)
+            foreach (ConversationDto? conversation in oneOneOneConversations)
             {
                 conversation.IsOnline = await _presenceTracker.IsUserOnline(conversation.ParticipantId.Value);
             }

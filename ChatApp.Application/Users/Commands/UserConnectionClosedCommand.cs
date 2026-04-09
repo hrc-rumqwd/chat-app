@@ -9,15 +9,10 @@ namespace ChatApp.Application.Users.Commands
         string ConnectionId
     ) : ICommand<Result<UserConnectionClosedCommandResult>>;
 
-    public class UserConnectionClosedCommandHandler
-        : ICommandHandler<UserConnectionClosedCommand, Result<UserConnectionClosedCommandResult>>
+    public class UserConnectionClosedCommandHandler(IPresenceTracker tracker)
+                : ICommandHandler<UserConnectionClosedCommand, Result<UserConnectionClosedCommandResult>>
     {
-        private readonly IPresenceTracker _tracker;
-
-        public UserConnectionClosedCommandHandler(IPresenceTracker tracker)
-        {
-            _tracker = tracker;
-        }
+        private readonly IPresenceTracker _tracker = tracker;
 
         public async Task<Result<UserConnectionClosedCommandResult>> Handle(UserConnectionClosedCommand request, CancellationToken cancellationToken)
         {

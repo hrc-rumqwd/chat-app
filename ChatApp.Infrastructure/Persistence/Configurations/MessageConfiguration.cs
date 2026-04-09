@@ -9,19 +9,19 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-            builder.ToTable("Messages");
+            _ = builder.ToTable("Messages");
 
-            builder.Property(e => e.Content)
+            _ = builder.Property(e => e.Content)
                 .IsRequired();
 
             builder.ApplyAuditableEntityConfiguration();
             builder.ApplyRemovableEntityConfiguration();
 
-            builder.HasOne(e => e.Sender)
+            _ = builder.HasOne(e => e.Sender)
                 .WithMany(u => u.Messages)
                 .HasForeignKey(f => f.SenderId);
 
-            builder.HasOne(e => e.Conversation)
+            _ = builder.HasOne(e => e.Conversation)
                 .WithMany(u => u.Messages)
                 .HasForeignKey(f => f.ConversationId);
         }

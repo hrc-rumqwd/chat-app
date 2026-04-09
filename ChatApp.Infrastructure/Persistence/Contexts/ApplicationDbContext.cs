@@ -5,25 +5,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Infrastructure.Persistence.Contexts
 {
-    public class ApplicationDbContext : IdentityDbContext<
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<
         AppUser,
         AppRole,
-        long>
+        long>(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            :base(options)
-        {
-        }
-
-        public DbSet<Message> Messages { get ; set ; }
-        public DbSet<Conversation> Conversations { get ; set ; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
         public DbSet<UserConversation> UserConversations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            _ = builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
             builder.ApplyIdentityConfiguration();
         }
     }

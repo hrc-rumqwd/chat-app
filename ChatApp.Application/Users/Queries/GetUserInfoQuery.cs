@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Mapster;
@@ -8,20 +9,15 @@ namespace ChatApp.Application.Users.Queries
 {
     public record GetUserInfoQuery(long UserId) : IQuery<Result<GetUserInfoQueryResult>>;
 
-    public class GetUserInfoQueryHandler : IQueryHandler<GetUserInfoQuery, Result<GetUserInfoQueryResult>>
+    public class GetUserInfoQueryHandler(
+        ApplicationDbContext context
+        ) : IQueryHandler<GetUserInfoQuery, Result<GetUserInfoQueryResult>>
     {
-        private readonly ApplicationDbContext _context;
-
-        public GetUserInfoQueryHandler(
-            ApplicationDbContext context
-        )
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         public async Task<Result<GetUserInfoQueryResult>> Handle(GetUserInfoQuery request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+            AppUser? user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
             return user is null
                 ? Result<GetUserInfoQueryResult>.Failure("User not found")
                 : Result<GetUserInfoQueryResult>.Success(

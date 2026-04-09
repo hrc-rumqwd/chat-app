@@ -12,19 +12,14 @@ namespace ChatApp.Application.Conversations.Queries
         public long ConversationId { get; set; }
     }
 
-    public class GetConversationMessagesQueryHandler : IQueryHandler<GetConversationMessagesQuery, Result<ICollection<MessageDto>>>
+    public class GetConversationMessagesQueryHandler(
+        ApplicationDbContext context) : IQueryHandler<GetConversationMessagesQuery, Result<ICollection<MessageDto>>>
     {
-        private readonly ApplicationDbContext _context;
-
-        public GetConversationMessagesQueryHandler(
-            ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         public async Task<Result<ICollection<MessageDto>>> Handle(GetConversationMessagesQuery request, CancellationToken cancellationToken)
         {
-            var conversation = await _context.Conversations
+            Conversation? conversation = await _context.Conversations
                 .AsNoTracking()
                 .Where(m => m.Id == request.ConversationId)
                 .Select(x => new Conversation
@@ -35,10 +30,12 @@ namespace ChatApp.Application.Conversations.Queries
                 })
                 .FirstOrDefaultAsync();
 
-            if(conversation is null)
+            if (conversation is null)
+            {
                 return Result<ICollection<MessageDto>>.Failure("Conversation not found");
+            }
 
-            var messages = conversation.Messages
+            List<MessageDto> messages = conversation.Messages
                 .Select(m => new MessageDto
                 {
                     Id = m.Id,
@@ -49,7 +46,7 @@ namespace ChatApp.Application.Conversations.Queries
                 .OrderByDescending(m => m.SendAt)
                 .ToList();
 
-            var participantsInfo = await _context.Users
+            List<MessageAuthorDto> participantsInfo = await _context.Users
                 .AsNoTracking()
                 .Where(x => conversation.Participants.Select(p => p.UserId).Contains(x.Id))
                 .Select(x => new MessageAuthorDto

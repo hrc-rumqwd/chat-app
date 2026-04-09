@@ -13,14 +13,9 @@ namespace ChatApp.Application.Conversations.Commands
         IEnumerable<long>? GroupUsers = null
         ) : ICommand<Result<ConversationDto>>;
 
-    public class CreateConversationCommandHandler : ICommandHandler<CreateConversationCommand, Result<ConversationDto>>
+    public class CreateConversationCommandHandler(ApplicationDbContext context) : ICommandHandler<CreateConversationCommand, Result<ConversationDto>>
     {
-        private readonly ApplicationDbContext _context;
-
-        public CreateConversationCommandHandler(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         public async Task<Result<ConversationDto>> Handle(CreateConversationCommand request, CancellationToken cancellationToken)
         {
@@ -40,13 +35,15 @@ namespace ChatApp.Application.Conversations.Commands
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (existed != null)
+            {
                 return Result<ConversationDto>.Success(new()
                 {
                     Id = existed.Id
                 });
+            }
 
             // Searching for users data
-            var users = await _context.Users
+            Dictionary<long, AppUser> users = await _context.Users
                 .AsNoTracking()
                 .Where(u =>
                     u.Id == request.RequestUserId
@@ -78,9 +75,9 @@ namespace ChatApp.Application.Conversations.Commands
                 UserDisplayName = users[request.DestinationUserId]?.FullName
             };
 
-            _context.Conversations.Add(conversation);
+            _ = _context.Conversations.Add(conversation);
             _context.UserConversations.AddRange(sourceUc, destinationUc);
-            await _context.SaveChangesAsync(cancellationToken);
+            _ = await _context.SaveChangesAsync(cancellationToken);
 
             return Result<ConversationDto>.Success(new() { Id = conversation.Id });
         }

@@ -9,47 +9,47 @@ namespace ChatApp.Infrastructure.Persistence.Configurations
     {
         public static void ApplyIdentityConfiguration(this ModelBuilder builder)
         {
-            builder.Entity<AppUser>(cfg =>
+            _ = builder.Entity<AppUser>(cfg =>
             {
-                cfg.ToTable("Users");
-                cfg.HasKey(k => k.Id);
-                cfg.Property(p => p.FullName).IsRequired();
-                cfg.Property(p => p.Dob).IsRequired();
+                _ = cfg.ToTable("Users");
+                _ = cfg.HasKey(k => k.Id);
+                _ = cfg.Property(p => p.FullName).IsRequired();
+                _ = cfg.Property(p => p.Dob).IsRequired();
 
                 cfg.ApplyAuditableEntityConfiguration();
                 cfg.ApplyRemovableEntityConfiguration();
             });
 
-            builder.Entity<AppRole>(cfg =>
+            _ = builder.Entity<AppRole>(cfg =>
             {
-                cfg.ToTable("Roles");
-                cfg.HasKey(k => k.Id);
+                _ = cfg.ToTable("Roles");
+                _ = cfg.HasKey(k => k.Id);
             });
 
-            builder.Entity<IdentityUserRole<long>>(cfg =>
+            _ = builder.Entity<IdentityUserRole<long>>(cfg =>
             {
-                cfg.ToTable("UserRoles");
-                cfg.HasKey(k => new {k.UserId, k.RoleId});
+                _ = cfg.ToTable("UserRoles");
+                _ = cfg.HasKey(k => new { k.UserId, k.RoleId });
             });
 
-            builder.Entity<IdentityRoleClaim<long>>(cfg =>
+            _ = builder.Entity<IdentityRoleClaim<long>>(cfg =>
             {
-                cfg.ToTable("RoleClaims");
+                _ = cfg.ToTable("RoleClaims");
             });
 
-            builder.Entity<IdentityUserClaim<long>>(cfg =>
+            _ = builder.Entity<IdentityUserClaim<long>>(cfg =>
             {
-                cfg.ToTable("UserClaims");
+                _ = cfg.ToTable("UserClaims");
             });
 
-            builder.Entity<IdentityUserLogin<long>>(cfg =>
+            _ = builder.Entity<IdentityUserLogin<long>>(cfg =>
             {
-                cfg.ToTable("UserLogins");
+                _ = cfg.ToTable("UserLogins");
             });
 
-            builder.Entity<IdentityUserToken<long>>(cfg =>
+            _ = builder.Entity<IdentityUserToken<long>>(cfg =>
             {
-                cfg.ToTable("UserTokens");
+                _ = cfg.ToTable("UserTokens");
             });
         }
     }

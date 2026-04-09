@@ -1,18 +1,14 @@
 ﻿using ChatApp.Application.Authentication.Commands;
 using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Web.Controllers
 {
     [Controller]
-    public class AuthController : Controller
+    public class AuthController(IBroker broker) : Controller
     {
-        private readonly IBroker _broker;
-
-        public AuthController(IBroker broker)
-        {
-            _broker = broker;
-        }
+        private readonly IBroker _broker = broker;
 
         [Route("/login")]
         public IActionResult Login(string returnUrl)
@@ -23,8 +19,8 @@ namespace ChatApp.Web.Controllers
         [HttpPost("/login")]
         public async Task<IActionResult> Login(LoginCommand command)
         {
-            var loginResult = await _broker.CommandAsync(command);
-            
+            Result<LoginCommandResult> loginResult = await _broker.CommandAsync(command);
+
             return loginResult.IsSuccess
             ? Ok(loginResult)
             : BadRequest(loginResult);
@@ -39,9 +35,9 @@ namespace ChatApp.Web.Controllers
         [HttpPost("/sign-up")]
         public async Task<IActionResult> SignUp(SignUpCommand command)
         {
-            var result = await _broker.CommandAsync(command);
+            Result<SignUpCommandResult> result = await _broker.CommandAsync(command);
             return result.IsSuccess
-                ? Created("/sign-up", result)    
+                ? Created("/sign-up", result)
                 : BadRequest(result);
         }
 

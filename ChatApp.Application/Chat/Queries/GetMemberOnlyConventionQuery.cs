@@ -9,14 +9,10 @@ namespace ChatApp.Application.Chat.Queries
         long destinationUserId)
         : IQuery<Result<GetMemberOnlyConventionQueryResult>>;
 
-    public class GetMemberOnlyConventionQueryHandler : IQueryHandler<GetMemberOnlyConventionQuery, Result<GetMemberOnlyConventionQueryResult>>
+    public class GetMemberOnlyConventionQueryHandler(
+        ApplicationDbContext context
+        ) : IQueryHandler<GetMemberOnlyConventionQuery, Result<GetMemberOnlyConventionQueryResult>>
     {
-        public GetMemberOnlyConventionQueryHandler(
-            ApplicationDbContext context
-        )
-        {
-        }
-
         public Task<Result<GetMemberOnlyConventionQueryResult>> Handle(GetMemberOnlyConventionQuery request, CancellationToken cancellationToken)
         {
             return Task.FromResult(Result<GetMemberOnlyConventionQueryResult>.Success(new GetMemberOnlyConventionQueryResult()));

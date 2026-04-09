@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -12,29 +11,29 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Messages_Groups_GroupId",
                 table: "Messages");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "Groups");
 
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "UserId",
                 table: "Messages",
                 newName: "SenderId");
 
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "GroupId",
                 table: "Messages",
                 newName: "ConversationId");
 
-            migrationBuilder.RenameIndex(
+            _ = migrationBuilder.RenameIndex(
                 name: "IX_Messages_GroupId",
                 table: "Messages",
                 newName: "IX_Messages_ConversationId");
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "Conversations",
                 columns: table => new
                 {
@@ -52,10 +51,10 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Conversations", x => x.Id);
+                    _ = table.PrimaryKey("PK_Conversations", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "UserConversations",
                 columns: table => new
                 {
@@ -73,14 +72,14 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserConversations", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_UserConversations", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_UserConversations_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_UserConversations_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
@@ -88,29 +87,29 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderId",
                 table: "Messages",
                 column: "SenderId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_UserConversations_ConversationId",
                 table: "UserConversations",
                 column: "ConversationId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_UserConversations_UserId",
                 table: "UserConversations",
                 column: "UserId");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Messages_Conversations_ConversationId",
                 table: "Messages",
                 column: "ConversationId",
                 principalTable: "Conversations",
                 principalColumn: "Id");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Messages_Users_SenderId",
                 table: "Messages",
                 column: "SenderId",
@@ -122,40 +121,40 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Messages_Conversations_ConversationId",
                 table: "Messages");
 
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_Messages_Users_SenderId",
                 table: "Messages");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "UserConversations");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "Conversations");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_Messages_SenderId",
                 table: "Messages");
 
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "SenderId",
                 table: "Messages",
                 newName: "UserId");
 
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "ConversationId",
                 table: "Messages",
                 newName: "GroupId");
 
-            migrationBuilder.RenameIndex(
+            _ = migrationBuilder.RenameIndex(
                 name: "IX_Messages_ConversationId",
                 table: "Messages",
                 newName: "IX_Messages_GroupId");
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -171,10 +170,10 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Groups", x => x.Id);
+                    _ = table.PrimaryKey("PK_Groups", x => x.Id);
                 });
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_Messages_Groups_GroupId",
                 table: "Messages",
                 column: "GroupId",

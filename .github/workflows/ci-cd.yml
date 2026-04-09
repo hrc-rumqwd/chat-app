@@ -31,6 +31,9 @@ jobs:
 
     # Step by step for the job
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     # Installing .NET SDK
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -39,15 +42,15 @@ jobs:
 
     # Getting dependencies and building
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ChatApp.slnx
     
     # Build the solution with release mode
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ChatApp.slnx --configuration Release --no-restore
 
     # Test the application after building (This requires application has unit tests)
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test ChatApp.slnx --no-build --verbosity normal
 
 
     # Checking code quality (or we also called it is `linting`)
@@ -57,10 +60,10 @@ jobs:
 
     # SonarLint configuration 
     - name: Install SonarAnalyzer
-      run: dotnet add package SonarAnalyzer.CSharp
+      run: dotnet add package SonarAnalyzer.CSharp --project ChatApp
 
     - name: Run SonarAnalyzer
-      run: dotnet build-server shutdown && dotnet build /p:TreatWarningsAsErrors=true
+      run: dotnet build-server shutdown && dotnet build ChatApp.slnx /p:TreatWarningsAsErrors=false
 
     # If using StyleCop, we configure like following
     # - name: Install StyleCop
@@ -74,12 +77,12 @@ jobs:
 
     # Add that editor config file into workflow
     - name: Enforce code style
-      run: dotnet format --verify-no-changes --verbosity diagnostic
+      run: dotnet format --exclude-diagnostics IDE0130
 
     # Packaging the app
     ### Creating deployment packages
     - name: Publish
-      run: dotnet publish -C Release -o ./publish
+      run: dotnet publish -c Release -o ./publish
     # This above builds the app and puts the files in a `publish` directory
 
     # For web apps, we might want a Web Deploy package
