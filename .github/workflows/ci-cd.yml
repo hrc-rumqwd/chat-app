@@ -64,7 +64,7 @@ jobs:
       run: dotnet add package SonarAnalyzer.CSharp --project ChatApp
 
     - name: Run SonarAnalyzer
-      run: dotnet build-server shutdown && dotnet build ChatApp.slnx /p:TreatWarningsAsErrors=false
+      run: dotnet build-server shutdown; dotnet build ChatApp.slnx /p:TreatWarningsAsErrors=false;
 
     # If using StyleCop, we configure like following
     # - name: Install StyleCop
