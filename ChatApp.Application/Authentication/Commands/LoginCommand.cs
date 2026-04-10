@@ -31,24 +31,30 @@ namespace ChatApp.Application.Authentication.Commands
         public async Task<Result<LoginCommandResult>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             // Searching for the user by username
-            var user = await userManager.FindByNameAsync(request.UserName);
+            AppUser? user = await userManager.FindByNameAsync(request.UserName);
 
-            if(user is null)
+            if (user is null)
             {
-                Result<LoginCommandResult>.Failure("User is not exist");
+                _ = Result<LoginCommandResult>.Failure("User is not exist");
             }
 
             SignInResult signInResult = await signInManager.PasswordSignInAsync(
                 user, request.Password, request.Remember, false);
 
-            if(signInResult.IsLockedOut)
-                Result<LoginCommandResult>.Failure(nameof(signInResult.IsLockedOut));
-            
-            if(signInResult.IsNotAllowed)
-                Result<LoginCommandResult>.Failure(nameof(signInResult.IsNotAllowed));
-            
-            if(signInResult.RequiresTwoFactor)
-                Result<LoginCommandResult>.Failure(nameof(signInResult.RequiresTwoFactor));
+            if (signInResult.IsLockedOut)
+            {
+                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.IsLockedOut));
+            }
+
+            if (signInResult.IsNotAllowed)
+            {
+                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.IsNotAllowed));
+            }
+
+            if (signInResult.RequiresTwoFactor)
+            {
+                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.RequiresTwoFactor));
+            }
 
             // If bypass all above conditions, then login
             await httpContextAccessor.HttpContext.SignInAsync(
@@ -66,17 +72,17 @@ namespace ChatApp.Application.Authentication.Commands
 
         protected ClaimsPrincipal GetUserClaims(AppUser user)
         {
-            List<Claim> claims = new List<Claim>()
-            {
+            List<Claim> claims =
+            [
                 new Claim(IdentityClaims.UserId, user.Id.ToString()),
                 new Claim(IdentityClaims.UserName, user.UserName),
                 new Claim(IdentityClaims.FullName, user.FullName),
                 new Claim(IdentityClaims.Dob, user.Dob.ToUniversalTime().ToString()),
-            };
-            
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims,
+            ];
+
+            ClaimsIdentity claimsIdentity = new(claims,
                 CookieAuthenticationDefaults.AuthenticationScheme);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            ClaimsPrincipal claimsPrincipal = new(claimsIdentity);
             return claimsPrincipal;
         }
     }

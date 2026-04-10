@@ -16,19 +16,18 @@ namespace ChatApp.Web.Extensions
         }
         public static IHtmlContent RenderPartialSectionScripts(this IHtmlHelper htmlHelper)
         {
-            var partialSectionScripts = htmlHelper.ViewContext.HttpContext.Items.Keys
+            IEnumerable<object> partialSectionScripts = htmlHelper.ViewContext.HttpContext.Items.Keys
                 .Where(k => Regex.IsMatch(
                     k.ToString(),
                     "^" + _partialViewScriptItemPrefix + "([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})$"));
-            var contentBuilder = new HtmlContentBuilder();
-            foreach (var key in partialSectionScripts)
+            HtmlContentBuilder contentBuilder = new HtmlContentBuilder();
+            foreach (object? key in partialSectionScripts)
             {
-                var template = htmlHelper.ViewContext.HttpContext.Items[key] as Func<object, HelperResult>;
-                if (template != null)
+                if (htmlHelper.ViewContext.HttpContext.Items[key] is Func<object, HelperResult> template)
                 {
-                    var writer = new System.IO.StringWriter();
+                    StringWriter writer = new StringWriter();
                     template(null).WriteTo(writer, HtmlEncoder.Default);
-                    contentBuilder.AppendHtml(writer.ToString());
+                    _ = contentBuilder.AppendHtml(writer.ToString());
                 }
             }
             return contentBuilder;

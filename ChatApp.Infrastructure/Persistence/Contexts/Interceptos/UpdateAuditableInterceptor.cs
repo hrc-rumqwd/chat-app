@@ -1,5 +1,6 @@
 ﻿using ChatApp.Shared.Models.Commons.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ChatApp.Infrastructure.Persistence.Contexts.Interceptos
@@ -11,8 +12,8 @@ namespace ChatApp.Infrastructure.Persistence.Contexts.Interceptos
             DateTime now = DateTime.UtcNow;
             if (eventData.Context is not null)
             {
-                var auditEntities = eventData.Context.ChangeTracker.Entries<IAuditableEntity>();
-                foreach (var entity in auditEntities)
+                IEnumerable<EntityEntry<IAuditableEntity>> auditEntities = eventData.Context.ChangeTracker.Entries<IAuditableEntity>();
+                foreach (EntityEntry<IAuditableEntity> entity in auditEntities)
                 {
                     if (entity.State == EntityState.Added)
                     {

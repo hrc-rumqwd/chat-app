@@ -4,7 +4,7 @@
     {
         public static IServiceCollection RegisterSignalR(this IServiceCollection services)
         {
-            services.AddSignalR();
+            _ = services.AddSignalR();
             return services;
         }
     }

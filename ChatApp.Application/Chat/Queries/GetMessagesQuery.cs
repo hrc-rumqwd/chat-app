@@ -11,10 +11,10 @@ namespace ChatApp.Application.Chat.Queries
         int PageIndex,
         int PageSize
     ) : IQuery<Result<ICollection<GetMessagesQueryResult>>>;
-    
+
 
     public class GetMessagesQueryHandler(
-        ApplicationDbContext context  
+        ApplicationDbContext context
     ) : IQueryHandler<GetMessagesQuery, Result<ICollection<GetMessagesQueryResult>>>
     {
         public async Task<Result<ICollection<GetMessagesQueryResult>>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ namespace ChatApp.Application.Chat.Queries
             //    return Result<ICollection<GetMessagesQueryResult>>.Failure("Group not found");
             //}
 
-            var messages = await context.Messages
+            List<GetMessagesQueryResult> messages = await context.Messages
                 .OrderByDescending(x => x.CreatedAt)
                 .PaginatedQuery(request.PageIndex, request.PageSize)
                 .Select(x => new GetMessagesQueryResult

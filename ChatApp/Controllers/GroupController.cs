@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Groups.Commands;
+using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.Web.Controllers
@@ -11,9 +12,9 @@ namespace ChatApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGroup(string groupName)
         {
-            var result = await broker.CommandAsync(new CreateGroupCommand(groupName));
-            return result.IsSuccess 
-                ? Ok(result) 
+            Result<CreateChatGroupCommandResult> result = await broker.CommandAsync(new CreateGroupCommand(groupName));
+            return result.IsSuccess
+                ? Ok(result)
                 : BadRequest(result);
         }
     }

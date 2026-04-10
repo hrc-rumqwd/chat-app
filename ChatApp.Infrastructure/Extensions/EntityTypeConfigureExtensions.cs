@@ -8,26 +8,26 @@ namespace ChatApp.Infrastructure.Extensions
         public static void ApplyAuditableEntityConfiguration<TEntity>(this EntityTypeBuilder<TEntity> modelBuilder)
             where TEntity : class, IAuditableEntity
         {
-            modelBuilder.Property(e => e.CreatedAt)
+            _ = modelBuilder.Property(e => e.CreatedAt)
                 .IsRequired();
 
-            modelBuilder.Property(e => e.UpdatedAt)
+            _ = modelBuilder.Property(e => e.UpdatedAt)
                 .IsRequired();
 
-            modelBuilder.Property(e => e.CreatedBy)
+            _ = modelBuilder.Property(e => e.CreatedBy)
                 .IsRequired(false);
 
-            modelBuilder.Property(e => e.UpdatedBy)
+            _ = modelBuilder.Property(e => e.UpdatedBy)
                 .IsRequired(false);
         }
 
         public static void ApplyRemovableEntityConfiguration<TEntity>(this EntityTypeBuilder<TEntity> modelBuilder)
             where TEntity : class, IRemovableEntity
         {
-            modelBuilder.Property(e => e.IsDeleted)
+            _ = modelBuilder.Property(e => e.IsDeleted)
                 .IsRequired();
 
-            modelBuilder.Property(e => e.IsActived)
+            _ = modelBuilder.Property(e => e.IsActived)
                 .IsRequired();
         }
     }

@@ -12,16 +12,16 @@ namespace ChatApp.Web.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
-        override public void Process(TagHelperContext context, TagHelperOutput output)
+        public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "script";
             output.TagMode = TagMode.StartTagAndEndTag;
             output.Attributes.SetAttribute("type", "text/javascript");
 
-            StringBuilder sb = new StringBuilder();
-            var filePath = ViewContext.View.Path;
-            sb.Append(filePath);
-            sb.Append(".js");
+            StringBuilder sb = new();
+            string filePath = ViewContext.View.Path;
+            _ = sb.Append(filePath);
+            _ = sb.Append(".js");
             output.Attributes.SetAttribute("src", sb.ToString());
         }
     }

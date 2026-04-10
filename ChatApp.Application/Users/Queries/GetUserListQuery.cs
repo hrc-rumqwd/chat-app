@@ -13,18 +13,12 @@ namespace ChatApp.Application.Users.Queries
         public long? CurrentUserId { get; set; }
     }
 
-    public class GetUserListQueryHandler : IQueryHandler<GetUserListQuery, Result<GetUserListQueryResult>>
+    public class GetUserListQueryHandler(
+        ApplicationDbContext dbContext,
+        IPresenceTracker tracker) : IQueryHandler<GetUserListQuery, Result<GetUserListQueryResult>>
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly IPresenceTracker _tracker;
-
-        public GetUserListQueryHandler(
-            ApplicationDbContext dbContext,
-            IPresenceTracker tracker)
-        {
-            _dbContext = dbContext;
-            _tracker = tracker;
-        }
+        private readonly ApplicationDbContext _dbContext = dbContext;
+        private readonly IPresenceTracker _tracker = tracker;
 
         public async Task<Result<GetUserListQueryResult>> Handle(GetUserListQuery request, CancellationToken cancellationToken)
         {
@@ -43,14 +37,14 @@ namespace ChatApp.Application.Users.Queries
                 })
                 .ToListAsync(cancellationToken);
 
-            if(pagedUsers.Count == 0)
+            if (pagedUsers.Count == 0)
             {
-                return Result<GetUserListQueryResult>.Success(new(new List<UserListItemDto>()));
+                return Result<GetUserListQueryResult>.Success(new([]));
             }
 
             long[] activeUsers = await _tracker.GetOnlineUsersAsync();
-            
-            foreach(var user in pagedUsers)
+
+            foreach (UserListItemDto user in pagedUsers)
             {
                 user.IsOnline = activeUsers.Contains(user.Id);
             }

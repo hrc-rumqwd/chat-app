@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ChatApp.Infrastructure.Caching
+﻿namespace ChatApp.Infrastructure.Caching
 {
     public class RedisCacheService : ICacheService
     {

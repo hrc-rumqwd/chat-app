@@ -3,6 +3,7 @@ using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Users.Commands;
 using ChatApp.Application.Users.Queries;
 using ChatApp.Shared.Constants;
+using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -17,9 +18,9 @@ namespace ChatApp.Application.Conversations.Hubs
     {
         public async Task SendMessage(string message, long userId, long conversationId)
         {
-            var sendMessageResult = await broker.CommandAsync(new SendMessageCommand(message, userId, conversationId));
+            Result<SendMessageCommandResult> sendMessageResult = await broker.CommandAsync(new SendMessageCommand(message, userId, conversationId));
 
-            if (sendMessageResult.IsSuccess != true)
+            if (!sendMessageResult.IsSuccess)
             {
                 await Clients.Caller.SendAsync("OnSendMessageError", sendMessageResult);
                 return;
@@ -31,24 +32,26 @@ namespace ChatApp.Application.Conversations.Hubs
             // Searching for receiver's connection id to send realtime message
             if (!sendMessageResult.Data.IsGroup)
             {
-                var connectionIds = await broker.QueryAsync(new GetUserConnectionsQuery(sendMessageResult.Data.OneToOneReceiver.Id));
+                Result<string[]> connectionIds = await broker.QueryAsync(new GetUserConnectionsQuery(sendMessageResult.Data.OneToOneReceiver.Id));
                 // Only send realtime message if receiver is online, otherwise just save message to database and wait for receiver to get it when they come online
                 if (connectionIds.Data.Length > 0)
+                {
                     await Clients.Clients(connectionIds.Data).SendAsync("ReceiveMessage", sendMessageResult);
+                }
             }
             #endregion
 
             #region Group chat
             // Search for multi member's connection ids to send realtime message
-            if(sendMessageResult.Data.IsGroup)
+            if (sendMessageResult.Data.IsGroup)
             {
-                var connectionIds = await broker.QueryAsync(new GetUsersConnectionsQuery(sendMessageResult.Data.Participants.Select(c => c.Id)));
-                var receivedClients = connectionIds.Data
+                Result<Dictionary<long, string[]>> connectionIds = await broker.QueryAsync(new GetUsersConnectionsQuery(sendMessageResult.Data.Participants.Select(c => c.Id)));
+                IEnumerable<string> receivedClients = connectionIds.Data
                     .Where(c => c.Value.Length > 0) // Only send realtime message to online users
                     .SelectMany(c => c.Value);
 
                 await Clients.Clients(receivedClients).SendAsync("ReceiveMessage", sendMessageResult);
-            }    
+            }
             #endregion
         }
 
@@ -64,7 +67,7 @@ namespace ChatApp.Application.Conversations.Hubs
                 return;
             }
 
-            var result = await broker.CommandAsync(new UserConnectionOpenedCommand(userId, Context.ConnectionId));
+            Result<UserConnectionOpenedCommandResult> result = await broker.CommandAsync(new UserConnectionOpenedCommand(userId, Context.ConnectionId));
             if (result.IsSuccess && result.Data.IsFirstConnection)
             {
                 await Clients.All.SendAsync("UserIsOnline", userId);
@@ -84,7 +87,7 @@ namespace ChatApp.Application.Conversations.Hubs
                 return;
             }
 
-            var result = await broker.CommandAsync(new UserConnectionClosedCommand(userId, Context.ConnectionId));
+            Result<UserConnectionClosedCommandResult> result = await broker.CommandAsync(new UserConnectionClosedCommand(userId, Context.ConnectionId));
             if (result.IsSuccess && result.Data.IsLastConnection)
             {
                 await Clients.All.SendAsync("UserIsOffline", userId);

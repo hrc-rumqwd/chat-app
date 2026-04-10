@@ -13,14 +13,14 @@ namespace ChatApp.Infrastructure.Extensions
             string connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException("Connection string must not be empty");
 
-            services.AddScoped<UpdateAuditableInterceptor>();
+            _ = services.AddScoped<UpdateAuditableInterceptor>();
 
-            services.AddDbContext<ApplicationDbContext>((sp, cfg) =>
+            _ = services.AddDbContext<ApplicationDbContext>((sp, cfg) =>
             {
-                cfg.UseNpgsql(connectionString)
+                _ = cfg.UseNpgsql(connectionString)
                     .AddInterceptors(sp.GetRequiredService<UpdateAuditableInterceptor>());
-                cfg.EnableSensitiveDataLogging();
-                cfg.EnableDetailedErrors();
+                _ = cfg.EnableSensitiveDataLogging();
+                _ = cfg.EnableDetailedErrors();
             });
 
             return services;

@@ -1,0 +1,111 @@
+on:
+# This fires when:
+# - Code hits the main branch
+# - A PR targeting is opened, reopened, or updated
+  push:
+  # With following configuration, the workflow runs when
+  # - Main gets new code
+  # - Any "releases/" branch is updated
+  # - A new "v" tag is created
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - 'v*'
+
+  # This workflow will be trigged when the PRs opened, reopened, or updated
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
+
+
+# Setting up the build job
+jobs:
+  build:
+  # This is choosing when to run (also called pick runner)
+  # There're 3 most common environments
+  # - Linux (ubuntu-latest): This is best for most .NET Core projects
+  # - Windows (windows-latest): This will be good for .NET Framework or Windows-specific builds
+  # - macOS (macos-latest): iOS or macOS apps
+    # runs-on: ubuntu-latest # For building chat app with .NET Core, so this is the best, because it fast and works well with cross-platform .NET apps
+    runs-on: self-hosted # Setup in GitHub Actions runner, for localhost
+
+    # Step by step for the job
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # Installing .NET SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    # Getting dependencies and building
+    - name: Restore dependencies
+      run: dotnet restore ChatApp.slnx
+    
+    # Build the solution with release mode
+    - name: Build
+      run: dotnet build ChatApp.slnx --configuration Release --no-restore
+
+    # Test the application after building (This requires application has unit tests)
+    - name: Test
+      run: dotnet test ChatApp.slnx --no-build --verbosity normal
+
+
+    # Checking code quality (or we also called it is `linting`)
+    # This help us to catch issues early and keep our codebase clean
+    # This automated code checks to your GitHub Actions workflow.
+    # There're many checkers, such as SonarLint, StyleCop,...
+
+    # SonarLint configuration 
+    - name: Install SonarAnalyzer
+      run: dotnet add package SonarAnalyzer.CSharp --project ChatApp
+
+    - name: Run SonarAnalyzer
+      run: dotnet build-server shutdown; dotnet build ChatApp.slnx /p:TreatWarningsAsErrors=false;
+
+    # If using StyleCop, we configure like following
+    # - name: Install StyleCop
+    # run: dotnet add package StyleCop.Analyzers
+
+    # - name: Run StyleCop
+    # run: dotnet build /p:TreatWarningsAsErrors=true
+
+    # Setting quality rules
+    # Need to define code quality standards by create an `.editorconfig` file in the repo.
+
+    # Add that editor config file into workflow
+    - name: Enforce code style
+      run: dotnet format --exclude-diagnostics IDE0130
+
+    # Packaging the app
+    ### Creating deployment packages
+    - name: Publish
+      run: dotnet publish -c Release -o ./publish
+    # This above builds the app and puts the files in a `publish` directory
+
+    # # For web apps, we might want a Web Deploy package
+    # - name: Create Web Deploy Package
+    #   run: msbuild /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="./publish"
+    # # This creates a zip with the app and deployment scripts
+
+    # # Managing versions
+    # # Versioning helps track changes
+
+    # # Install GitVersion
+    # - name: Install GitVersion
+    #   uses: gittools/actions/gitversion/setup@v0.9.7
+    #   with:
+    #     versionSpec: '5.x'
+
+    # # Get the version:
+    # - name: Determine Version
+    #   id: gitversion
+    #   uses: gittools/actions/gitversion/execute@v0.9.7
+
+    # # Use it in our build:
+    # - name: Build
+    #   run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
+    # # This updates our app's version based on Git history    

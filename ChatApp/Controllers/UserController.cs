@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Users.Queries;
 using ChatApp.Shared.Constants;
+using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -10,20 +11,15 @@ using System.Security.Claims;
 namespace ChatApp.Web.Controllers
 {
     [Route("api/users")]
-    public class UserController : Controller
+    public class UserController(IBroker broker) : Controller
     {
-        private readonly IBroker _broker;
-
-        public UserController(IBroker broker)
-        {
-            _broker = broker;
-        }
+        private readonly IBroker _broker = broker;
 
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
-            var result = await _broker.QueryAsync(new GetUserInfoQuery(
+            Result<GetUserInfoQueryResult> result = await _broker.QueryAsync(new GetUserInfoQuery(
                 long.Parse(
                     User.FindFirstValue(IdentityClaims.UserId))));
 
@@ -35,7 +31,7 @@ namespace ChatApp.Web.Controllers
         [HttpGet("{userId:long}")]
         public async Task<IActionResult> GetUserInfo(long userId)
         {
-            var result = await _broker.QueryAsync(new GetUserInfoQuery(userId));
+            Result<GetUserInfoQueryResult> result = await _broker.QueryAsync(new GetUserInfoQuery(userId));
             return result.IsSuccess
                 ? Ok(result)
                 : BadRequest(result);
@@ -46,13 +42,13 @@ namespace ChatApp.Web.Controllers
         {
             long? currentUserId = null;
 
-            var cookieAuthResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            AuthenticateResult cookieAuthResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             if (cookieAuthResult.Succeeded)
             {
                 currentUserId = long.Parse(cookieAuthResult.Principal.FindFirstValue(IdentityClaims.UserId));
             }
 
-            var users = await _broker.QueryAsync(new GetUserListQuery
+            Result<GetUserListQueryResult> users = await _broker.QueryAsync(new GetUserListQuery
             {
                 CurrentUserId = currentUserId,
                 PageIndex = pageIndex,

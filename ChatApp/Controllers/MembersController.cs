@@ -1,6 +1,8 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Members.Dtos;
 using ChatApp.Application.Members.Queries;
 using ChatApp.Shared.Constants;
+using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +16,12 @@ namespace ChatApp.Web.Controllers
     {
         [HttpGet]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetMemberConversationList([FromQuery]GetMemberListQuery query)
+        public async Task<IActionResult> GetMemberConversationList([FromQuery] GetMemberListQuery query)
         {
             // Reset user Id to ensure that the user cannot manipulate it
             query.RequestUserId = long.Parse(HttpContext.User.FindFirstValue(IdentityClaims.UserId));
-            var result = await broker.QueryAsync(query);
-            return result.IsSuccess 
+            Result<ICollection<MemberDto>> result = await broker.QueryAsync(query);
+            return result.IsSuccess
                 ? Ok(result)
                 : BadRequest(result);
         }

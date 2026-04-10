@@ -30,19 +30,13 @@ namespace ChatApp.Application.Authentication.Commands
         public DateTime Dob { get; set; }
     }
 
-    public class SignUpCommandHandler : ICommandHandler<SignUpCommand, Result<SignUpCommandResult>>
+    public class SignUpCommandHandler(
+        ApplicationDbContext context,
+        UserManager<AppUser> userManager
+        ) : ICommandHandler<SignUpCommand, Result<SignUpCommandResult>>
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<AppUser> _userManager;
-
-        public SignUpCommandHandler(
-            ApplicationDbContext context,
-            UserManager<AppUser> userManager
-        )
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+        private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<AppUser> _userManager = userManager;
 
         public async Task<Result<SignUpCommandResult>> Handle(SignUpCommand request, CancellationToken cancellationToken)
         {
@@ -50,10 +44,10 @@ namespace ChatApp.Application.Authentication.Commands
 
             if (exist != null)
             {
-                Result<SignUpCommandResult>.Failure("User name already exists");
+                _ = Result<SignUpCommandResult>.Failure("User name already exists");
             }
 
-            AppUser user = new AppUser
+            AppUser user = new()
             {
                 UserName = request.UserName,
                 FullName = request.FullName,
@@ -62,16 +56,13 @@ namespace ChatApp.Application.Authentication.Commands
 
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
-            if (!result.Succeeded)
-            {
-                return Result<SignUpCommandResult>.Failure(result.Errors?.FirstOrDefault()?.Description);
-            }
-
-            return Result<SignUpCommandResult>.Success(new SignUpCommandResult
-            {
-                UserId = user.Id,
-                UserName = user.UserName
-            });
+            return !result.Succeeded
+                ? Result<SignUpCommandResult>.Failure(result.Errors?.FirstOrDefault()?.Description)
+                : Result<SignUpCommandResult>.Success(new SignUpCommandResult
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName
+                });
         }
     }
 

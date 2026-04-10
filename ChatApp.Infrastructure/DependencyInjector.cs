@@ -12,8 +12,8 @@ namespace ChatApp.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.RegisterDbContext(configuration);
-            services.AddIdentity<AppUser, AppRole>(cfg =>
+            _ = services.RegisterDbContext(configuration);
+            _ = services.AddIdentity<AppUser, AppRole>(cfg =>
             {
                 cfg.Password.RequireDigit = true;
                 cfg.Password.RequireUppercase = false;
@@ -23,12 +23,12 @@ namespace ChatApp.Infrastructure
                 .AddEntityFrameworkStores<Persistence.Contexts.ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddSingleton<IPresenceTracker, PresenceTracker>();
+            _ = services.AddSingleton<IPresenceTracker, PresenceTracker>();
 
 
             // Caching setup
-            services.AddMemoryCache();
-            services.AddSingleton<ICacheService, MemoryCacheService>();
+            _ = services.AddMemoryCache();
+            _ = services.AddSingleton<ICacheService, MemoryCacheService>();
 
         }
     }

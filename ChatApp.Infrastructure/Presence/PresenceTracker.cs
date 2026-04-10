@@ -15,15 +15,15 @@ namespace ChatApp.Infrastructure.Presence
         {
             bool isLastConnection = false;
 
-            if(_onlineUsers.TryGetValue(userId, out var connections))
+            if (_onlineUsers.TryGetValue(userId, out HashSet<string>? connections))
             {
-                lock(connections)
+                lock (connections)
                 {
-                    connections.Remove(connectionId);
+                    _ = connections.Remove(connectionId);
                     if (connections.Count == 0)
                     {
                         isLastConnection = true;
-                        _onlineUsers.TryRemove(userId, out _);
+                        _ = _onlineUsers.TryRemove(userId, out _);
                     }
                 }
             }
@@ -35,17 +35,17 @@ namespace ChatApp.Infrastructure.Presence
         {
             bool isFirstConnection = false;
 
-            _onlineUsers.AddOrUpdate(userId,
+            _ = _onlineUsers.AddOrUpdate(userId,
                 _ =>
                 {
                     isFirstConnection = true;
-                    return new HashSet<string> { connectionId };
+                    return [connectionId];
                 },
                 (_, connections) =>
                 {
                     lock (connections)
                     {
-                        connections.Add(connectionId);
+                        var added = connections.Add(connectionId);
                     }
                     return connections;
                 }
@@ -61,7 +61,7 @@ namespace ChatApp.Infrastructure.Presence
 
         public Task<string[]> GetUserConnectionsAsync(long userId)
         {
-            _onlineUsers.TryGetValue(userId, out var connectionIds);
+            _ = _onlineUsers.TryGetValue(userId, out HashSet<string>? connectionIds);
             return Task.FromResult(connectionIds?.ToArray() ?? []);
         }
 

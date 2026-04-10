@@ -10,7 +10,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "Messages_CreatedAt_idx",
                 table: "Messages",
                 column: "CreatedAt");
@@ -19,7 +19,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "Messages_CreatedAt_idx",
                 table: "Messages");
         }

@@ -13,16 +13,16 @@ namespace ChatApp.Application.Chat.Commands
         long ConversationId
     ) :
     ICommand<Result<SendMessageCommandResult>>;
-    
+
 
     public class SendMessageCommandHandler(
-        ApplicationDbContext dbContext   
+        ApplicationDbContext dbContext
     ) : ICommandHandler<SendMessageCommand, Result<SendMessageCommandResult>>
     {
         public async Task<Result<SendMessageCommandResult>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
         {
 
-            var conversation = await dbContext.Conversations
+            Conversation? conversation = await dbContext.Conversations
                 .Where(x => x.Id == request.ConversationId)
                     .Include(c => c.Participants)
                         .ThenInclude(c => c.User)
@@ -40,10 +40,14 @@ namespace ChatApp.Application.Chat.Commands
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (conversation is null)
+            {
                 return Result<SendMessageCommandResult>.Failure("Not found conversation");
+            }
 
             if (!IsUserInConversation(conversation, request.SenderId))
+            {
                 return Result<SendMessageCommandResult>.Failure("User action is invalid");
+            }
 
 
             // Check user is exist and active
@@ -51,24 +55,26 @@ namespace ChatApp.Application.Chat.Commands
                 .Where(x => x.Id == request.SenderId)
                 .AnyAsync(cancellationToken);
 
-            if(!userExisted)
+            if (!userExisted)
+            {
                 return Result<SendMessageCommandResult>.Failure("User not found");
+            }
 
-            Message m = new Message()
+            Message m = new()
             {
                 Content = request.Content,
                 SenderId = request.SenderId,
                 ConversationId = request.ConversationId
             };
 
-            dbContext.Messages.Add(m);
+            _ = dbContext.Messages.Add(m);
 
             conversation.LastMessageContent = request.Content;
             conversation.LastMessageAt = DateTime.UtcNow;
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            _ = await dbContext.SaveChangesAsync(cancellationToken);
 
-            var result = new SendMessageCommandResult()
+            SendMessageCommandResult result = new SendMessageCommandResult()
             {
                 SenderId = request.SenderId,
                 SenderName = conversation.Participants.FirstOrDefault(p => p.UserId == request.SenderId).UserDisplayName,
@@ -80,7 +86,7 @@ namespace ChatApp.Application.Chat.Commands
 
             if (!conversation.IsGroup)
             {
-                var receiver = conversation.Participants.FirstOrDefault(p => p.UserId != request.SenderId);
+                UserConversation? receiver = conversation.Participants.FirstOrDefault(p => p.UserId != request.SenderId);
                 result.OneToOneReceiver = new ParticipantDto
                 {
                     Id = receiver.Id,
@@ -89,7 +95,7 @@ namespace ChatApp.Application.Chat.Commands
             }
             else
             {
-                result.Participants = new List<ParticipantDto>();
+                result.Participants = [];
                 conversation.Participants
                     .Where(p => p.UserId != request.SenderId)
                     .ToList()
@@ -107,10 +113,12 @@ namespace ChatApp.Application.Chat.Commands
         }
 
         private bool IsUserInConversation(Conversation conversation, long userId)
-            => conversation.Participants?.Any(c => c.UserId == userId) ?? false;
+        {
+            return conversation.Participants?.Any(c => c.UserId == userId) ?? false;
+        }
     }
 
-    public class SendMessageCommandResult 
+    public class SendMessageCommandResult
     {
         public long SenderId { get; set; }
         public string SenderName { get; set; }

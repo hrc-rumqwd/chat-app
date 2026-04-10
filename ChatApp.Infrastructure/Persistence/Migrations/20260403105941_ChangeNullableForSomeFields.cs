@@ -10,7 +10,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Conversations",
                 type: "character varying(100)",
@@ -20,7 +20,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 oldType: "character varying(100)",
                 oldMaxLength: 100);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "LastMessageContent",
                 table: "Conversations",
                 type: "text",
@@ -32,7 +32,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "Title",
                 table: "Conversations",
                 type: "character varying(100)",
@@ -44,7 +44,7 @@ namespace ChatApp.Infrastructure.Persistence.Migrations
                 oldMaxLength: 100,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "LastMessageContent",
                 table: "Conversations",
                 type: "text",

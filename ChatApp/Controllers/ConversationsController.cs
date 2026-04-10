@@ -1,9 +1,10 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Application.Conversations.Commands;
+using ChatApp.Application.Conversations.Dtos;
 using ChatApp.Application.Conversations.Queries;
 using ChatApp.Shared.Constants;
+using ChatApp.Shared.Models.Commons;
 using ChatApp.Web.Extensions;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,20 +15,15 @@ namespace ChatApp.Web.Controllers
     [Controller]
     [Authorize]
     [Route("api/[Controller]")]
-    public class ConversationsController : Controller
+    public class ConversationsController(IBroker broker) : Controller
     {
-        private readonly IBroker _broker;
-
-        public ConversationsController(IBroker broker)
-        {
-            _broker = broker;
-        }
+        private readonly IBroker _broker = broker;
 
         [HttpGet("{conversationId:long}")]
         [Authorize]
         public async Task<IActionResult> GetConversationMessages(long conversationId, int pageIndex, int pageSize)
         {
-            var result = await _broker.QueryAsync(new GetConversationMessagesQuery
+            Result<ICollection<MessageDto>> result = await _broker.QueryAsync(new GetConversationMessagesQuery
             {
                 ConversationId = conversationId,
                 PageIndex = pageIndex,
@@ -43,8 +39,8 @@ namespace ChatApp.Web.Controllers
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetConversations(int pageIndex, int pageSize)
         {
-            var userId = long.Parse(HttpContext.User.FindFirstValue(IdentityClaims.UserId));
-            var result = await _broker.QueryAsync(new GetConversationsQuery
+            long userId = long.Parse(HttpContext.User.FindFirstValue(IdentityClaims.UserId));
+            Result<ICollection<ConversationDto>> result = await _broker.QueryAsync(new GetConversationsQuery
             {
                 UserId = userId,
                 PageIndex = pageIndex,
@@ -60,7 +56,7 @@ namespace ChatApp.Web.Controllers
         public async Task<IActionResult> CreateConversation(long userId)
         {
             long currentUserId = await HttpContext.GetUserIdAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            var result = await _broker.CommandAsync(new CreateConversationCommand(currentUserId, userId));
+            Result<ConversationDto> result = await _broker.CommandAsync(new CreateConversationCommand(currentUserId, userId));
             return result.IsSuccess
                 ? Ok(result)
                 : BadRequest(result.Error);
@@ -72,7 +68,7 @@ namespace ChatApp.Web.Controllers
         {
             long currentUserId = await HttpContext.GetUserIdAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             command.HostUserId = currentUserId;
-            var result = await _broker.CommandAsync(command);
+            Result<ConversationDto> result = await _broker.CommandAsync(command);
             return result.IsSuccess
                 ? Ok(result)
                 : BadRequest(result);
