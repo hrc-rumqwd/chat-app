@@ -86,12 +86,6 @@ jobs:
       run: dotnet publish -c Release -o ./publish
     # This above builds the app and puts the files in a `publish` directory
 
-    - name: Upload Artifact #we will download this on deployment
-      uses: actions/upload-artifact@v4
-      with:
-        name: umbraco-published
-        path: ./publish
-
     # # For web apps, we might want a Web Deploy package
     # - name: Create Web Deploy Package
     #   run: msbuild /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="./publish"
@@ -114,22 +108,4 @@ jobs:
     # # Use it in our build:
     # - name: Build
     #   run: dotnet build --configuration Release /p:Version=${{ steps.gitversion.outputs.semVer }}
-    # # This updates our app's version based on Git history
-    
-  deploy: # Second job
-    runs-on: self-hosted
-
-    steps:
-      - name: Download Artifact # the uploaded files in the previous step
-        uses: actions/download-artifact@v4
-        with:
-          name: umbraco-published
-          path: C:\inetpub\wwwroot\Umbraco
-
-      # Restart IIS to Apply Changes
-      - name: Restart IIS
-        shell: powershell
-        run: |
-          iisreset /restart
-          Write-Host "IIS restarted successfully!"
-    
+    # # This updates our app's version based on Git history    
