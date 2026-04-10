@@ -1,5 +1,6 @@
 ﻿using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Caching;
+using ChatApp.Infrastructure.Encoders;
 using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Presence;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,7 @@ namespace ChatApp.Infrastructure
             _ = services.AddMemoryCache();
             _ = services.AddSingleton<ICacheService, MemoryCacheService>();
 
+            services.AddKeyedSingleton<IApplicationEncoder, Crc32Encoder>(Crc32Encoder.SERVICE_KEY);
         }
     }
 }

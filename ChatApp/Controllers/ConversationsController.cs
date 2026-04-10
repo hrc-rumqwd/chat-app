@@ -73,5 +73,33 @@ namespace ChatApp.Web.Controllers
                 ? Ok(result)
                 : BadRequest(result);
         }
+
+        [HttpGet("{conversationId:long}/invitation-link")]
+        [Authorize]
+        public async Task<IActionResult> CreateInvitationLink([FromRoute]CreateInvitationLinkCommand command)
+        {
+            var result = await _broker.CommandAsync(command);
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
+
+        public async Task<IActionResult> GetConversationInformationByInvitationLink(string invitationPath)
+        {
+            var result = await _broker.QueryAsync(new GetConversationInformationByInvitationLinkQuery(invitationPath));
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
+
+        [HttpGet("invite/{invitationPath:required}")]
+        public async Task<IActionResult> JoinThroughInvitationLink(string invitationPath)
+        {
+            long userId = await HttpContext.GetUserIdAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var result = await _broker.CommandAsync(new JoinConversationThroughInvitationLinkCommand(userId, invitationPath));
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
     }
 }

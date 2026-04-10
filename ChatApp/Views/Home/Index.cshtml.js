@@ -13,10 +13,16 @@ let currentConversationIndex = 0;
 let observer = undefined;
 let topObserver = undefined;
 
+let events = ["contextmenu", "touchstart"];
+
 const userList = $("ul#userList");
 const trigger = $("div#loadingTrigger");
 const messageBoard = $("ul#messageBoard");
 const topSentiel = $("div#topSentinel");
+
+const memberContextMenu = $("#memberContextMenu");
+
+var conversationIdClickedMenuContext = undefined;
 
 
 const hubConnection = new signalR.HubConnectionBuilder()
@@ -304,6 +310,86 @@ $(document).ready(async function () {
     }
 
     StartSignalR();
+
+    events.forEach((eventType) => {
+        userList[0].addEventListener(
+            eventType,
+            e => {
+                e.preventDefault();
+
+                let clickedElement = document.elementFromPoint(e.clientX, e.clientY);
+                let clickedMember = $(clickedElement).closest("li.p-2.border-bottom");
+                conversationIdClickedMenuContext = clickedMember.attr("id");
+
+                // x and y position of mouse or touch
+                let mouseX = e.clientX || e.touches[0].clientX;
+                let mouseY = e.clientY || e.touches[0].clientY;
+
+                // height and width of menu
+                let menuHeight = memberContextMenu[0].getBoundingClientRect().height;
+                let menuWidth = memberContextMenu[0].getBoundingClientRect().width;
+
+                // widht and height of screen
+                let width = window.innerWidth;
+                let height = window.innerHeight;
+
+                // If user clicks/touches near right corner
+                if (width - mouseX <= 200) {
+                    memberContextMenu.css("border-radius", "5px 0 5px 5px");
+                    memberContextMenu.css("left", `${width - menuWidth}px`);
+                    memberContextMenu.csss("top", `${mouseY}px`);
+
+                    // right bottom
+                    if (height - mouseY <= 200) {
+                        memberContextMenu.css("top", `${mouseY - menuHeight}px`);
+                        memberContextMenu.css("border-radius", "5px 5px 0 5px");
+                    }
+                }
+                // left
+                else {
+                    memberContextMenu.css("border-radius", "0 5px 5px 5px");
+                    memberContextMenu.css("left", mouseX + "px");
+                    memberContextMenu.css("top", mouseY + "px");
+
+                    // left bottom
+                    if (height - mouseY <= 200) {
+                        memberContextMenu.css("top", `${mouseY - menuHeight}px`);
+                        memberContextMenu.css("border-radius", "5px 5px 5px 0");
+                    }
+                }
+
+                // Display the menu
+                memberContextMenu.css("visibility", "visible");
+            },
+            { passive: false }
+        );
+    });
+
+    memberContextMenu.find("li.menu-item").on("click", function (e) {
+        const action = $(this).data("action");
+        switch (action) {
+            case "create-invitation":
+                $.ajax({
+                    url: `/api/conversations/${conversationIdClickedMenuContext}/invitation-link`,
+                    type: "GET",
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: result => {
+                        // TODO: Show modal with invitation link
+                    }
+                });
+                break;
+            case "remove-conversation":
+                break;
+        }
+    });
+
+    $(document).on("click", function (e) {
+        if (!memberContextMenu[0].contains(e.target)) {
+            memberContextMenu.css("visibility", "hidden");
+        }
+    });
 });
 
 function showAddConversationModal() {
