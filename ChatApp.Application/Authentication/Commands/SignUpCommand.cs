@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Shared.Constants;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
@@ -31,11 +31,9 @@ namespace ChatApp.Application.Authentication.Commands
     }
 
     public class SignUpCommandHandler(
-        ApplicationDbContext context,
         UserManager<AppUser> userManager
         ) : ICommandHandler<SignUpCommand, Result<SignUpCommandResult>>
     {
-        private readonly ApplicationDbContext _context = context;
         private readonly UserManager<AppUser> _userManager = userManager;
 
         public async Task<Result<SignUpCommandResult>> Handle(SignUpCommand request, CancellationToken cancellationToken)
@@ -44,25 +42,35 @@ namespace ChatApp.Application.Authentication.Commands
 
             if (exist != null)
             {
-                _ = Result<SignUpCommandResult>.Failure("User name already exists");
+                return Result<SignUpCommandResult>.Failure("User name already exists");
             }
 
             AppUser user = new()
             {
                 UserName = request.UserName,
                 FullName = request.FullName,
-                Dob = request.Dob.ToUniversalTime()
+                Dob = request.Dob.ToUniversalTime(),
+                IsActived = true
             };
 
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
-            return !result.Succeeded
-                ? Result<SignUpCommandResult>.Failure(result.Errors?.FirstOrDefault()?.Description)
-                : Result<SignUpCommandResult>.Success(new SignUpCommandResult
-                {
-                    UserId = user.Id,
-                    UserName = user.UserName
-                });
+            if (!result.Succeeded)
+            {
+                return Result<SignUpCommandResult>.Failure(result.Errors?.FirstOrDefault()?.Description);
+            }
+
+            IdentityResult addUserRoleResult = await _userManager.AddToRoleAsync(user, AppRoles.User);
+            if (!addUserRoleResult.Succeeded)
+            {
+                return Result<SignUpCommandResult>.Failure(addUserRoleResult.Errors?.FirstOrDefault()?.Description);
+            }
+
+            return Result<SignUpCommandResult>.Success(new SignUpCommandResult
+            {
+                UserId = user.Id,
+                UserName = user.UserName
+            });
         }
     }
 

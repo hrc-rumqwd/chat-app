@@ -1,0 +1,92 @@
+@model ChatApp.Web.Models.ProfilePageViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container py-4">
+    <h2 class="mb-3">My Profile</h2>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    @if (Model.CurrentUser is null)
+    {
+        <div class="alert alert-warning">Unable to load your profile right now.</div>
+    }
+    else
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Account</h5>
+                <p class="mb-1"><strong>User Name:</strong> @Model.CurrentUser.UserName</p>
+                <p class="mb-0"><strong>Status:</strong> @(Model.CurrentUser.IsActived ? "Active" : "Inactive")</p>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Update Profile</h5>
+                    <form method="post" action="/profile">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label asp-for="ProfileForm.FullName" class="form-label"></label>
+                            <input asp-for="ProfileForm.FullName" class="form-control" />
+                            <span asp-validation-for="ProfileForm.FullName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ProfileForm.Alias" class="form-label"></label>
+                            <input asp-for="ProfileForm.Alias" class="form-control" />
+                            <span asp-validation-for="ProfileForm.Alias" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ProfileForm.Dob" class="form-label"></label>
+                            <input asp-for="ProfileForm.Dob" class="form-control" type="date" />
+                            <span asp-validation-for="ProfileForm.Dob" class="text-danger"></span>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Change Password</h5>
+                    <form method="post" action="/profile/password">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label asp-for="PasswordForm.CurrentPassword" class="form-label"></label>
+                            <input asp-for="PasswordForm.CurrentPassword" class="form-control" type="password" />
+                            <span asp-validation-for="PasswordForm.CurrentPassword" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PasswordForm.NewPassword" class="form-label"></label>
+                            <input asp-for="PasswordForm.NewPassword" class="form-control" type="password" />
+                            <span asp-validation-for="PasswordForm.NewPassword" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PasswordForm.ConfirmPassword" class="form-label"></label>
+                            <input asp-for="PasswordForm.ConfirmPassword" class="form-control" type="password" />
+                            <span asp-validation-for="PasswordForm.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

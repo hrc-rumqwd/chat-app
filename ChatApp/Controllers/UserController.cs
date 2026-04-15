@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Users.Commands;
 using ChatApp.Application.Users.Queries;
 using ChatApp.Shared.Constants;
 using ChatApp.Shared.Models.Commons;
@@ -19,10 +20,31 @@ namespace ChatApp.Web.Controllers
         [HttpGet("current")]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
-            Result<GetUserInfoQueryResult> result = await _broker.QueryAsync(new GetUserInfoQuery(
-                long.Parse(
-                    User.FindFirstValue(IdentityClaims.UserId))));
+            Result<GetUserInfoQueryResult> result = await _broker.QueryAsync(
+                new GetUserInfoQuery(long.Parse(User.FindFirstValue(IdentityClaims.UserId))));
 
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        [HttpPut("current/profile")]
+        public async Task<IActionResult> UpdateCurrentUserProfile([FromBody] UpdateCurrentUserProfileCommand command)
+        {
+            command.CurrentUserId = long.Parse(User.FindFirstValue(IdentityClaims.UserId));
+            Result<UpdateCurrentUserProfileCommandResult> result = await _broker.CommandAsync(command);
+            return result.IsSuccess
+                ? Ok(result)
+                : BadRequest(result);
+        }
+
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        [HttpPost("current/password")]
+        public async Task<IActionResult> ChangeCurrentUserPassword([FromBody] ChangeCurrentUserPasswordCommand command)
+        {
+            command.CurrentUserId = long.Parse(User.FindFirstValue(IdentityClaims.UserId));
+            Result<ChangeCurrentUserPasswordCommandResult> result = await _broker.CommandAsync(command);
             return result.IsSuccess
                 ? Ok(result)
                 : BadRequest(result);

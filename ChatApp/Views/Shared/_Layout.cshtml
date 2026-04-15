@@ -18,6 +18,16 @@
             <nav class="navbar navbar-expand-sm navbar-light bg-white box-shadow">
                 <div class="container-fluid">
                     <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ChatApp</a>
+                    <div class="d-flex gap-3">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="nav-link" href="/profile">My Profile</a>
+                            @if (User.IsInRole(AppRoles.Admin))
+                            {
+                                <a class="nav-link" href="/admin/users">User Management</a>
+                            }
+                        }
+                    </div>
                 </div>
             </nav>
         </header>

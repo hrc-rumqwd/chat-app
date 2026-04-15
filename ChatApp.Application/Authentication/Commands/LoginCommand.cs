@@ -35,7 +35,12 @@ namespace ChatApp.Application.Authentication.Commands
 
             if (user is null)
             {
-                _ = Result<LoginCommandResult>.Failure("User is not exist");
+                return Result<LoginCommandResult>.Failure("User is not exist");
+            }
+
+            if (!user.IsActived)
+            {
+                return Result<LoginCommandResult>.Failure("User is inactive");
             }
 
             SignInResult signInResult = await signInManager.PasswordSignInAsync(
@@ -43,23 +48,23 @@ namespace ChatApp.Application.Authentication.Commands
 
             if (signInResult.IsLockedOut)
             {
-                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.IsLockedOut));
+                return Result<LoginCommandResult>.Failure(nameof(signInResult.IsLockedOut));
             }
 
             if (signInResult.IsNotAllowed)
             {
-                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.IsNotAllowed));
+                return Result<LoginCommandResult>.Failure(nameof(signInResult.IsNotAllowed));
             }
 
             if (signInResult.RequiresTwoFactor)
             {
-                _ = Result<LoginCommandResult>.Failure(nameof(signInResult.RequiresTwoFactor));
+                return Result<LoginCommandResult>.Failure(nameof(signInResult.RequiresTwoFactor));
             }
 
             // If bypass all above conditions, then login
             await httpContextAccessor.HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                GetUserClaims(user),
+                await GetUserClaimsAsync(user),
                 new AuthenticationProperties
                 {
                     IsPersistent = request.Remember,
@@ -70,7 +75,7 @@ namespace ChatApp.Application.Authentication.Commands
             return Result<LoginCommandResult>.Success(new LoginCommandResult(request.ReturnUrl));
         }
 
-        protected ClaimsPrincipal GetUserClaims(AppUser user)
+        protected async Task<ClaimsPrincipal> GetUserClaimsAsync(AppUser user)
         {
             List<Claim> claims =
             [
@@ -79,6 +84,9 @@ namespace ChatApp.Application.Authentication.Commands
                 new Claim(IdentityClaims.FullName, user.FullName),
                 new Claim(IdentityClaims.Dob, user.Dob.ToUniversalTime().ToString()),
             ];
+
+            IList<string> roles = await userManager.GetRolesAsync(user);
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             ClaimsIdentity claimsIdentity = new(claims,
                 CookieAuthenticationDefaults.AuthenticationScheme);
