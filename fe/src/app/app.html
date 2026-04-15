@@ -1,0 +1,63 @@
+<section class="h-100">
+    <div class="container-fluid p-3 h-100">
+
+        <div class="row h-100 g-3">
+
+            <div class="col-md-4 col-lg-4 h-100 d-flex flex-column">
+
+                <h5 class="font-weight-bold mb-3">Member 
+                    <span (click)="handleCreateNewConversation()"><i class="fa fa-plus fs-6"></i></span>
+                </h5>
+
+                <div class="card flex-grow-1 overflow-hidden">
+                    <div class="card-body overflow-y-auto">
+                        <ul id="userList" class="list-unstyled mb-0">
+                          <!-- TODO: Add conversation item here -->
+                        </ul>
+                        <div id="loadingTrigger" style="height: 20px;">
+                            <div class="skeleton-container" id="skeleton-loader" style="display: none;">
+                                <div class="skeleton-item">
+                                    <div class="skeleton-avatar"></div>
+                                    <div class="skeleton-text"></div>
+                                </div>
+                                <div class="skeleton-item">
+                                    <div class="skeleton-avatar"></div>
+                                    <div class="skeleton-text"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-8 col-lg-8 h-100 d-flex flex-column">
+
+                <ul id="messageBoard" class="list-unstyled overflow-y-auto flex-grow-1 px-3 border rounded bg-light mb-3">
+                    <div id="topSentinel" style="height: 2px;"></div>
+                    <div id="topSkeleton" style="display: none;"></div>
+
+                </ul>
+                <div class="bg-white p-2 border-top">
+                    <div data-mdb-input-init class="form-outline mb-2">
+                        <textarea class="form-control bg-body-tertiary" id="messageInput" rows="4" placeholder="Message..."></textarea>
+                    </div> 
+                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-info btn-rounded float-end" onclick="sendMessage(event)">Send</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<div id="conversationModalContainer"></div>
+
+@if(isModalVisible) {
+  <app-custom-modal (onCloseTrigger)="onCloseModal()" (onSuccessTrigger)="onCreateNewConversation()">
+    <p>Select someone for beginning chat</p>
+    <select class="member-list" multiple="multiple">
+        <option value="">-- Select member --</option>
+    </select>
+  </app-custom-modal>
+}
