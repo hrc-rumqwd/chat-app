@@ -1,0 +1,91 @@
+@model ChatApp.Web.Models.AdminUsersPageViewModel
+@{
+    ViewData["Title"] = "Admin - Users";
+}
+
+<div class="container py-4">
+    <h2 class="mb-3">User Management</h2>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <form method="get" action="/admin/users" class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input name="searchKeyword" value="@Model.SearchKeyword" class="form-control" placeholder="Search by username, full name, alias..." />
+        </div>
+        <div class="col-md-2">
+            <input name="pageSize" value="@Model.PageSize" class="form-control" type="number" min="1" />
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>UserName</th>
+                    <th>Full Name</th>
+                    <th>Alias</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Lockout</th>
+                    <th style="width: 260px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Users.Count == 0)
+            {
+                <tr>
+                    <td colspan="7" class="text-center">No users found.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@user.FullName</td>
+                        <td>@user.Alias</td>
+                        <td>@string.Join(", ", user.Roles)</td>
+                        <td>@(user.IsActived ? "Active" : "Inactive")</td>
+                        <td>@(user.IsLocked ? "Locked" : "Unlocked")</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <form method="post" action="/admin/users/@user.UserId/activation">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="isActived" value="@(!user.IsActived)" />
+                                    <input type="hidden" name="searchKeyword" value="@Model.SearchKeyword" />
+                                    <input type="hidden" name="pageIndex" value="@Model.PageIndex" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                    <button class="btn btn-sm @(user.IsActived ? "btn-warning" : "btn-success")" type="submit">
+                                        @(user.IsActived ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
+                                <form method="post" action="/admin/users/@user.UserId/lockout">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="isLocked" value="@(!user.IsLocked)" />
+                                    <input type="hidden" name="searchKeyword" value="@Model.SearchKeyword" />
+                                    <input type="hidden" name="pageIndex" value="@Model.PageIndex" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                    <button class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-danger")" type="submit">
+                                        @(user.IsLocked ? "Unlock" : "Lock")
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

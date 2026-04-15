@@ -1,9 +1,13 @@
 using ChatApp.Infrastructure;
 using ChatApp.Application;
+using ChatApp.Shared.Constants;
+using ChatApp.Data.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using ChatApp.Web.Extensions;
 using ChatApp.Web.Exceptions;
 using ChatApp.Application.Conversations.Hubs;
+using ChatApp.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +27,11 @@ builder.Services.ConfigureApplicationCookie(cfg =>
 {
     cfg.LoginPath = "/login";
 });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AppRoles.Admin, policy => policy.RequireRole(AppRoles.Admin));
+});
 #endregion
 
 builder.Services
@@ -41,6 +50,8 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddSwaggerGen();
 
 WebApplication app = builder.Build();
+
+await app.Services.SeedIdentityDataAsync();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
