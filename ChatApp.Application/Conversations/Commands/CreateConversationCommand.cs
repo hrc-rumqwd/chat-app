@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Application.Conversations.Dtos;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,9 +13,14 @@ namespace ChatApp.Application.Conversations.Commands
         IEnumerable<long>? GroupUsers = null
         ) : ICommand<Result<ConversationDto>>;
 
-    public class CreateConversationCommandHandler(ApplicationDbContext context) : ICommandHandler<CreateConversationCommand, Result<ConversationDto>>
+    public class CreateConversationCommandHandler : ICommandHandler<CreateConversationCommand, Result<ConversationDto>>
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IApplicationDbContext _context;
+
+        public CreateConversationCommandHandler(IApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<Result<ConversationDto>> Handle(CreateConversationCommand request, CancellationToken cancellationToken)
         {

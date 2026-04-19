@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Application.Conversations.Dtos;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +10,9 @@ namespace ChatApp.Application.Conversations.Queries
 
     public class GetConversationInformationByInvitationLinkQueryHandler : IQueryHandler<GetConversationInformationByInvitationLinkQuery, Result<ConversationDto>>
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
 
-        public GetConversationInformationByInvitationLinkQueryHandler(ApplicationDbContext context)
+        public GetConversationInformationByInvitationLinkQueryHandler(IApplicationDbContext context)
         {
             _context = context;
         }

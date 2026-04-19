@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Shared.Models.Commons;
 
 namespace ChatApp.Application.Groups.Commands
@@ -10,7 +10,7 @@ namespace ChatApp.Application.Groups.Commands
 
 
     public class CreateChatGroupCommandHandler(
-        ApplicationDbContext context
+        IApplicationDbContext context
     ) : ICommandHandler<CreateGroupCommand, Result<CreateChatGroupCommandResult>>
     {
         public Task<Result<CreateChatGroupCommandResult>> Handle(CreateGroupCommand request, CancellationToken cancellationToken)

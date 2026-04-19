@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Presence;
+using ChatApp.Application.Contracts.Services;
 using ChatApp.Shared.Models.Commons;
 
 namespace ChatApp.Application.Users.Commands
@@ -14,11 +14,10 @@ namespace ChatApp.Application.Users.Commands
         ) : ICommandHandler<UserConnectionOpenedCommand,
         Result<UserConnectionOpenedCommandResult>>
     {
-        private readonly IPresenceTracker _tracker = tracker;
 
         public async Task<Result<UserConnectionOpenedCommandResult>> Handle(UserConnectionOpenedCommand request, CancellationToken cancellationToken)
         {
-            bool isFirstConnection = await _tracker.ConnectionOpenedAsync(request.UserId, request.ConnectionId);
+            bool isFirstConnection = await tracker.ConnectionOpenedAsync(request.UserId, request.ConnectionId);
             return Result<UserConnectionOpenedCommandResult>.Success(new(isFirstConnection));
         }
     }

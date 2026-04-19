@@ -1,4 +1,6 @@
-﻿namespace ChatApp.Infrastructure.Caching
+﻿using ChatApp.Application.Contracts.Services;
+
+namespace ChatApp.Infrastructure.Caching
 {
     public class RedisCacheService : ICacheService
     {

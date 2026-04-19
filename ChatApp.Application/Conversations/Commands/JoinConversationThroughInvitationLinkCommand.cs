@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,9 +13,9 @@ namespace ChatApp.Application.Conversations.Commands
 
     public class JoinConversationThroughInvitationLinkCommandHandler : ICommandHandler<JoinConversationThroughInvitationLinkCommand, Result<JoinConversationThroughInvitationLinkCommandResult>>
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
 
-        public JoinConversationThroughInvitationLinkCommandHandler(ApplicationDbContext context)
+        public JoinConversationThroughInvitationLinkCommandHandler(IApplicationDbContext context)
         {
             _context = context;
         }

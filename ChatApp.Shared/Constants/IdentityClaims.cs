@@ -8,5 +8,6 @@ namespace ChatApp.Shared.Constants
         public const string UserName = ClaimTypes.Name;
         public const string Dob = "Dob";
         public const string FullName = "FullName";
+        public const string Roles = "Roles";
     }
 }

@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
@@ -31,11 +31,11 @@ namespace ChatApp.Application.Authentication.Commands
     }
 
     public class SignUpCommandHandler(
-        ApplicationDbContext context,
+        IApplicationDbContext context,
         UserManager<AppUser> userManager
         ) : ICommandHandler<SignUpCommand, Result<SignUpCommandResult>>
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IApplicationDbContext _context = context;
         private readonly UserManager<AppUser> _userManager = userManager;
 
         public async Task<Result<SignUpCommandResult>> Handle(SignUpCommand request, CancellationToken cancellationToken)

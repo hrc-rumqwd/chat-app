@@ -1,8 +1,13 @@
-﻿using ChatApp.Data.Entities;
+﻿using ChatApp.Application.Contracts.Encoders;
+using ChatApp.Application.Contracts.Services;
+using ChatApp.Application.Contracts.Tokens;
+using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Caching;
 using ChatApp.Infrastructure.Encoders;
 using ChatApp.Infrastructure.Extensions;
 using ChatApp.Infrastructure.Presence;
+using ChatApp.Infrastructure.Tokens;
+using ChatApp.Shared.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +36,8 @@ namespace ChatApp.Infrastructure
             _ = services.AddMemoryCache();
             _ = services.AddSingleton<ICacheService, MemoryCacheService>();
 
-            services.AddKeyedSingleton<IApplicationEncoder, Crc32Encoder>(Crc32Encoder.SERVICE_KEY);
+            services.AddKeyedSingleton<IApplicationEncoder, Crc32Encoder>(EncoderServiceKeys.CRC_32);
+            services.AddSingleton<IJwtTokenService, JwtTokenService>();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using ChatApp.Application.Contracts.Services;
+using System.Collections.Concurrent;
 
 namespace ChatApp.Infrastructure.Presence
 {

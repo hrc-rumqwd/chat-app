@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Infrastructure.Caching
+﻿namespace ChatApp.Application.Contracts.Services
 {
     public interface ICacheService
     {

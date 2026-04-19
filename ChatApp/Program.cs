@@ -4,12 +4,26 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using ChatApp.Web.Extensions;
 using ChatApp.Web.Exceptions;
 using ChatApp.Application.Conversations.Hubs;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.IdentityModel.Tokens;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 #region Authorisation
-builder.Services.AddAuthentication(cfg => cfg.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(cfg => cfg.DefaultAuthenticateScheme = BearerTokenDefaults.AuthenticationScheme)
+    .AddJwtBearer(BearerTokenDefaults.AuthenticationScheme, cfg =>
+    {
+        cfg.Audience = builder.Configuration["JwtConfiguration:Audience"];
+        cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JwtConfiguration:Issuer"],
+            ValidateIssuer = bool.Parse(builder.Configuration["JwtConfiguration:ValidateIssuer"]),
+            ValidAudience = builder.Configuration["JwtConfiguration:Audience"],
+            ValidateAudience = bool.Parse(builder.Configuration["JwtConfiguration:ValidateAudience"]),
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtConfiguration:SecretKey"])),
+        };
+    })
     .AddCookie(cfg =>
     {
         cfg.LoginPath = "/login";
@@ -30,10 +44,19 @@ builder.Services
     .AddInfrastructure(builder.Configuration);
 
 builder.Services.RegisterSignalR();
-
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddCors(cfg =>
+{
+    cfg.AddPolicy("AllowLocalOnly", pol =>
+    {
+        pol.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
 
 builder.Services.AddControllersWithViews()
      .AddRazorRuntimeCompilation();
@@ -56,6 +79,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowLocalOnly");
 
 app.UseRouting();
 

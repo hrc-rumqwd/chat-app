@@ -1,8 +1,8 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Application.Contracts.Services;
 using ChatApp.Application.Users.Shared.Dtos;
-using ChatApp.Infrastructure.Extensions;
-using ChatApp.Infrastructure.Persistence.Contexts;
-using ChatApp.Infrastructure.Presence;
+using ChatApp.Shared.Extensions;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,12 +13,18 @@ namespace ChatApp.Application.Users.Queries
         public long? CurrentUserId { get; set; }
     }
 
-    public class GetUserListQueryHandler(
-        ApplicationDbContext dbContext,
-        IPresenceTracker tracker) : IQueryHandler<GetUserListQuery, Result<GetUserListQueryResult>>
+    public class GetUserListQueryHandler : IQueryHandler<GetUserListQuery, Result<GetUserListQueryResult>>
     {
-        private readonly ApplicationDbContext _dbContext = dbContext;
-        private readonly IPresenceTracker _tracker = tracker;
+        private readonly IApplicationDbContext _dbContext;
+        private readonly IPresenceTracker _tracker;
+
+        public GetUserListQueryHandler(
+            IApplicationDbContext dbContext,
+            IPresenceTracker tracker)
+        {
+            _dbContext = dbContext;
+            _tracker = tracker;
+        }
 
         public async Task<Result<GetUserListQueryResult>> Handle(GetUserListQuery request, CancellationToken cancellationToken)
         {

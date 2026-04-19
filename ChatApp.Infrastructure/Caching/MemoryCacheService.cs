@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using ChatApp.Application.Contracts.Services;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ChatApp.Infrastructure.Caching
 {

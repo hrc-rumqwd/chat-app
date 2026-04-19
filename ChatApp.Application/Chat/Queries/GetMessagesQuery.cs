@@ -1,6 +1,6 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Extensions;
-using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Shared.Extensions;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +14,7 @@ namespace ChatApp.Application.Chat.Queries
 
 
     public class GetMessagesQueryHandler(
-        ApplicationDbContext context
+        IApplicationDbContext context
     ) : IQueryHandler<GetMessagesQuery, Result<ICollection<GetMessagesQueryResult>>>
     {
         public async Task<Result<ICollection<GetMessagesQueryResult>>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)

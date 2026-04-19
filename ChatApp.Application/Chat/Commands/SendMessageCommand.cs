@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.Chat.Dtos;
 using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +16,7 @@ namespace ChatApp.Application.Chat.Commands
 
 
     public class SendMessageCommandHandler(
-        ApplicationDbContext dbContext
+        IApplicationDbContext dbContext
     ) : ICommandHandler<SendMessageCommand, Result<SendMessageCommandResult>>
     {
         public async Task<Result<SendMessageCommandResult>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
