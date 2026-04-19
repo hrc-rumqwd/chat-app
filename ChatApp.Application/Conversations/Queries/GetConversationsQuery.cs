@@ -1,8 +1,8 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Application.Contracts.Services;
 using ChatApp.Application.Conversations.Dtos;
-using ChatApp.Infrastructure.Extensions;
-using ChatApp.Infrastructure.Persistence.Contexts;
-using ChatApp.Infrastructure.Presence;
+using ChatApp.Shared.Extensions;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,12 +13,18 @@ namespace ChatApp.Application.Conversations.Queries
         public long UserId { get; set; }
     }
 
-    public class GetConversationsQueryHandler(
-        ApplicationDbContext context,
-        IPresenceTracker presenceTracker) : IQueryHandler<GetConversationsQuery, Result<ICollection<ConversationDto>>>
+    public class GetConversationsQueryHandler : IQueryHandler<GetConversationsQuery, Result<ICollection<ConversationDto>>>
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly IPresenceTracker _presenceTracker = presenceTracker;
+        private readonly IApplicationDbContext _context;
+        private readonly IPresenceTracker _presenceTracker;
+
+        public GetConversationsQueryHandler(
+            IApplicationDbContext context,
+            IPresenceTracker presenceTracker)
+        {
+            _context = context;
+            _presenceTracker = presenceTracker;
+        }
 
         public async Task<Result<ICollection<ConversationDto>>> Handle(GetConversationsQuery request, CancellationToken cancellationToken)
         {

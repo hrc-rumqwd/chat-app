@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Presence;
+using ChatApp.Application.Contracts.Services;
 using ChatApp.Shared.Models.Commons;
 
 namespace ChatApp.Application.Users.Queries
@@ -10,14 +10,12 @@ namespace ChatApp.Application.Users.Queries
 
     public class GetUsersConnectionsQueryHandler(IPresenceTracker tracker) : IQueryHandler<GetUsersConnectionsQuery, Result<Dictionary<long, string[]>>>
     {
-        private readonly IPresenceTracker _tracker = tracker;
-
         public async Task<Result<Dictionary<long, string[]>>> Handle(GetUsersConnectionsQuery request, CancellationToken cancellationToken)
         {
             Dictionary<long, string[]> connectionsList = [];
             foreach (long userId in request.UserIds)
             {
-                string[] connections = await _tracker.GetUserConnectionsAsync(userId);
+                string[] connections = await tracker.GetUserConnectionsAsync(userId);
                 connectionsList.Add(userId, connections);
             }
 

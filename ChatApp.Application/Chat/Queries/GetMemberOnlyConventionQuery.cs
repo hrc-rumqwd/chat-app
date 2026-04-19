@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Shared.Models.Commons;
 
 namespace ChatApp.Application.Chat.Queries
@@ -10,7 +10,7 @@ namespace ChatApp.Application.Chat.Queries
         : IQuery<Result<GetMemberOnlyConventionQueryResult>>;
 
     public class GetMemberOnlyConventionQueryHandler(
-        ApplicationDbContext context
+        IApplicationDbContext context
         ) : IQueryHandler<GetMemberOnlyConventionQuery, Result<GetMemberOnlyConventionQueryResult>>
     {
         public Task<Result<GetMemberOnlyConventionQueryResult>> Handle(GetMemberOnlyConventionQuery request, CancellationToken cancellationToken)

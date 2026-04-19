@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
 using ChatApp.Application.Conversations.Dtos;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +12,14 @@ namespace ChatApp.Application.Conversations.Queries
         public long ConversationId { get; set; }
     }
 
-    public class GetConversationMessagesQueryHandler(
-        ApplicationDbContext context) : IQueryHandler<GetConversationMessagesQuery, Result<ICollection<MessageDto>>>
+    public class GetConversationMessagesQueryHandler : IQueryHandler<GetConversationMessagesQuery, Result<ICollection<MessageDto>>>
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IApplicationDbContext _context;
+
+        public GetConversationMessagesQueryHandler(IApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<Result<ICollection<MessageDto>>> Handle(GetConversationMessagesQuery request, CancellationToken cancellationToken)
         {

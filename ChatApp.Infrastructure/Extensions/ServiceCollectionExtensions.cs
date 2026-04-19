@@ -1,4 +1,5 @@
-﻿using ChatApp.Infrastructure.Persistence.Contexts;
+﻿using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Infrastructure.Persistence.Contexts;
 using ChatApp.Infrastructure.Persistence.Contexts.Interceptos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +23,8 @@ namespace ChatApp.Infrastructure.Extensions
                 _ = cfg.EnableSensitiveDataLogging();
                 _ = cfg.EnableDetailedErrors();
             });
+
+            services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
             return services;
         }

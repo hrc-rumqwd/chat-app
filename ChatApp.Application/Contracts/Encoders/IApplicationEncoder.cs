@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Infrastructure.Encoders
+﻿namespace ChatApp.Application.Contracts.Encoders
 {
     public interface IApplicationEncoder
     {

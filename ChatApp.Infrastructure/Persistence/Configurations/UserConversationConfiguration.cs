@@ -1,5 +1,5 @@
 ﻿using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Extensions;
+using ChatApp.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

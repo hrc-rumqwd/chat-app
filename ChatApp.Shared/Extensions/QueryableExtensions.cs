@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Infrastructure.Extensions
+﻿namespace ChatApp.Shared.Extensions
 {
     public static class QueryableExtensions
     {

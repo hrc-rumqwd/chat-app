@@ -1,4 +1,5 @@
-﻿using ChatApp.Data.Entities;
+﻿using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Data.Entities;
 using ChatApp.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ namespace ChatApp.Infrastructure.Persistence.Contexts
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<
         AppUser,
         AppRole,
-        long>(options)
+        long>(options), IApplicationDbContext
     {
         public DbSet<Message> Messages { get; set; }
         public DbSet<Conversation> Conversations { get; set; }

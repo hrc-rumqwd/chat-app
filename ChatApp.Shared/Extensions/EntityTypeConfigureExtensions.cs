@@ -1,7 +1,7 @@
 ﻿using ChatApp.Shared.Models.Commons.Abstractions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ChatApp.Infrastructure.Extensions
+namespace ChatApp.Shared.Extensions
 {
     public static class EntityTypeConfigureExtensions
     {

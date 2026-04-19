@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
-using ChatApp.Infrastructure.Presence;
+using ChatApp.Application.Contracts.Services;
 using ChatApp.Shared.Models.Commons;
 
 namespace ChatApp.Application.Users.Commands
@@ -12,11 +12,9 @@ namespace ChatApp.Application.Users.Commands
     public class UserConnectionClosedCommandHandler(IPresenceTracker tracker)
                 : ICommandHandler<UserConnectionClosedCommand, Result<UserConnectionClosedCommandResult>>
     {
-        private readonly IPresenceTracker _tracker = tracker;
-
         public async Task<Result<UserConnectionClosedCommandResult>> Handle(UserConnectionClosedCommand request, CancellationToken cancellationToken)
         {
-            bool isLastConnection = await _tracker.ConnectionClosedAsync(request.UserId, request.ConnectionId);
+            bool isLastConnection = await tracker.ConnectionClosedAsync(request.UserId, request.ConnectionId);
             return Result<UserConnectionClosedCommandResult>.Success(new(isLastConnection));
         }
     }

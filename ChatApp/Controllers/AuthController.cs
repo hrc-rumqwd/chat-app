@@ -16,7 +16,8 @@ namespace ChatApp.Web.Controllers
             return View();
         }
 
-        [HttpPost("/login")]
+        [NonAction]
+        [Obsolete("This method is marked as obsolete. Please use the new LoginAsync method instead.")]
         public async Task<IActionResult> Login(LoginCommand command)
         {
             Result<LoginCommandResult> loginResult = await _broker.CommandAsync(command);
@@ -24,6 +25,15 @@ namespace ChatApp.Web.Controllers
             return loginResult.IsSuccess
             ? Ok(loginResult)
             : BadRequest(loginResult);
+        }
+
+        [HttpPost("/login")]
+        public async Task<IActionResult> LoginAsync([FromBody]JwtLoginCommand command)
+        {
+            Result<JwtLoginCommandResult> loginResult = await _broker.CommandAsync(command);
+            return loginResult.IsSuccess
+            ? Ok(loginResult.Data)
+            : BadRequest(loginResult.Error);
         }
 
         [Route("/sign-up")]

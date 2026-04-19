@@ -1,7 +1,8 @@
 ﻿using ChatApp.Application.Contracts.Brokers;
+using ChatApp.Application.Contracts.DbContext;
+using ChatApp.Application.Contracts.Encoders;
 using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Encoders;
-using ChatApp.Infrastructure.Persistence.Contexts;
+using ChatApp.Shared.Constants;
 using ChatApp.Shared.Models.Commons;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +18,10 @@ namespace ChatApp.Application.Conversations.Commands
     public class CreateInvitationLinkCommandHandler : ICommandHandler<CreateInvitationLinkCommand, Result<CreateInvitationLinkCommandResult>>
     {
         private readonly IServiceProvider _sp;
-        private readonly ApplicationDbContext _context;
+        private readonly IApplicationDbContext _context;
 
         public CreateInvitationLinkCommandHandler(
-            ApplicationDbContext context,
+            IApplicationDbContext context,
             IServiceProvider sp)
         {
             _sp = sp;
@@ -29,7 +30,7 @@ namespace ChatApp.Application.Conversations.Commands
 
         public async Task<Result<CreateInvitationLinkCommandResult>> Handle(CreateInvitationLinkCommand request, CancellationToken cancellationToken)
         {
-            IApplicationEncoder encoder = _sp.GetRequiredKeyedService<IApplicationEncoder>(Crc32Encoder.SERVICE_KEY);
+            IApplicationEncoder encoder = _sp.GetRequiredKeyedService<IApplicationEncoder>(EncoderServiceKeys.CRC_32);
 
             var conversation = await _context.Conversations
                 .Where(c => c.Id == request.ConversationId)

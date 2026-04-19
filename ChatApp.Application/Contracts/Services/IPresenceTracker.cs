@@ -1,4 +1,4 @@
-﻿namespace ChatApp.Infrastructure.Presence
+﻿namespace ChatApp.Application.Contracts.Services
 {
     public interface IPresenceTracker
     {

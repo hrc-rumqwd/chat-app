@@ -1,5 +1,5 @@
 ﻿using ChatApp.Data.Entities;
-using ChatApp.Infrastructure.Extensions;
+using ChatApp.Shared.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

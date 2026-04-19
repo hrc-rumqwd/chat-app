@@ -1,11 +1,11 @@
-﻿using System.IO.Hashing;
+﻿using ChatApp.Application.Contracts.Encoders;
+using System.IO.Hashing;
 using System.Text;
 
 namespace ChatApp.Infrastructure.Encoders
 {
     public class Crc32Encoder : IApplicationEncoder
     {
-        public const string SERVICE_KEY = "Crc32";
         public string Decode(string input)
         {
             throw new NotImplementedException();
